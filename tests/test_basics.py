@@ -13,6 +13,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+# Locale names and translated strings are non-ASCII; the default Windows console
+# encoding (cp1252) can't print them and would crash the check() below.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8")
+
 import app.config as config  # noqa: E402
 
 _SANDBOX = Path(tempfile.mkdtemp(prefix="atm-tests-"))
