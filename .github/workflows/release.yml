@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python tests/test_basics.py
+
+      - name: Build executable
+        run: >
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name Tunetop
+          --add-data "skins;skins"
+          --add-data "locales;locales"
+          main.py
+
+      - name: Package
+        run: |
+          mkdir release
+          copy dist\Tunetop.exe release\
+          copy README.md release\
+          copy README.ru.md release\
+          copy LICENSE release\
+          copy CHANGELOG.md release\
+          Compress-Archive -Path release\* -DestinationPath Tunetop-${{ github.ref_name }}-windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Tunetop-windows
+          path: |
+            dist/Tunetop.exe
+            Tunetop-*.zip
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            dist/Tunetop.exe
+            Tunetop-*.zip

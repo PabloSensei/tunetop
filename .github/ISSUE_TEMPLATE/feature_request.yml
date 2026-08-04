@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: Describe the situation, not just the feature you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: How you imagine it working. Sketches and screenshots welcome.
+
+  - type: checkboxes
+    id: kind
+    attributes:
+      label: This is about
+      options:
+        - label: The widget itself
+        - label: A skin or the skin format
+        - label: A translation
+        - label: Hotkeys or the tray

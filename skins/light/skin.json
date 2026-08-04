@@ -1,0 +1,26 @@
+{
+  "name": "Light",
+  "author": "built-in",
+  "extends": "dark",
+
+  "colors": {
+    "bg": "#ffffff",
+    "bg2": "#eef1f7",
+    "border": "#d5dbe6",
+    "shadow": "#33000000",
+    "title": "#171b23",
+    "artist": "#5f6877",
+    "time": "#8b93a1",
+    "icon": "#2b303a",
+    "icon_hover": "#0a0c11",
+    "icon_disabled": "#bcc3cf",
+    "icon_bg_hover": "#14000000",
+    "accent": "#3d6cff",
+    "progress_bg": "#d8dee9",
+    "progress_fg": "#3d6cff",
+    "art_placeholder": "#e4e9f1",
+    "chrome": "#98a0b0",
+    "chrome_hover": "#171b23",
+    "close_hover": "#e0483d"
+  }
+}

@@ -1,0 +1,51 @@
+name: Bug report
+description: Something does not work the way it should
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you saw, and what you expected instead.
+    validations:
+      required: true
+
+  - type: input
+    id: player
+    attributes:
+      label: Which player were you controlling
+      placeholder: Spotify / Chrome (YouTube) / foobar2000 / …
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Tunetop version
+      placeholder: 1.0.0 (see the About tab in the settings)
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: >
+        If the app does not start or crashes, run `run-debug.bat` and paste the output here.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: The player shows up in the Windows media flyout (the panel above the volume slider)
+        - label: I checked this is not one of the known limitations in the README

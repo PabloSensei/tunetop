@@ -1,0 +1,32 @@
+{
+  "name": "Glass",
+  "author": "built-in",
+  "extends": "dark",
+
+  "radius": 18,
+  "padding": 12,
+  "art_size": 60,
+  "art_radius": 12,
+  "shadow": 22,
+
+  "colors": {
+    "bg": "#b32b3040",
+    "bg2": "#8c11141c",
+    "border": "#40ffffff",
+    "shadow": "#59000000",
+    "title": "#ffffff",
+    "artist": "#c4cbd8",
+    "time": "#9aa2b1",
+    "icon": "#ffffff",
+    "icon_hover": "#ffffff",
+    "icon_disabled": "#59ffffff",
+    "icon_bg_hover": "#2effffff",
+    "accent": "#8ab4ff",
+    "progress_bg": "#33ffffff",
+    "progress_fg": "#ffffff",
+    "art_placeholder": "#33ffffff",
+    "chrome": "#a6b0c0",
+    "chrome_hover": "#ffffff",
+    "close_hover": "#ff6b60"
+  }
+}

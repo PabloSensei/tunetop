@@ -1,0 +1,36 @@
+{
+  "name": "Neon",
+  "author": "built-in",
+  "extends": "dark",
+
+  "radius": 6,
+  "art_radius": 3,
+  "shadow": 20,
+
+  "colors": {
+    "bg": "#151327",
+    "bg2": "#0a0913",
+    "border": "#7a3cff",
+    "shadow": "#7000e5ff",
+    "title": "#f6f2ff",
+    "artist": "#a08cff",
+    "time": "#6f63a8",
+    "icon": "#00e5ff",
+    "icon_hover": "#ffffff",
+    "icon_disabled": "#3b3560",
+    "icon_bg_hover": "#2600e5ff",
+    "accent": "#ff3ec8",
+    "progress_bg": "#2b2350",
+    "progress_fg": "#ff3ec8",
+    "art_placeholder": "#1d1836",
+    "chrome": "#6f63a8",
+    "chrome_hover": "#00e5ff",
+    "close_hover": "#ff3ec8"
+  },
+
+  "fonts": {
+    "title": {"family": "Consolas", "size": 10, "bold": true, "letter_spacing": 0.4},
+    "artist": {"family": "Consolas", "size": 9, "bold": false},
+    "time": {"family": "Consolas", "size": 8, "bold": false}
+  }
+}

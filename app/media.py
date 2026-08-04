@@ -1,0 +1,400 @@
+"""Windows SMTC (System Media Transport Controls) bridge.
+
+Runs an asyncio loop on a background thread, listens to WinRT session events and
+pushes immutable snapshots of the playback state to the Qt side via signals.
+Works with any app that registers a media session: Spotify, browsers, foobar2000,
+AIMP, VLC, Media Player, etc.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import threading
+import time
+from dataclasses import dataclass, field
+
+from PySide6.QtCore import QObject, Signal
+
+from winsdk.windows.media.control import (
+    GlobalSystemMediaTransportControlsSessionManager as SessionManager,
+)
+from winsdk.windows.storage.streams import DataReader
+
+# GlobalSystemMediaTransportControlsSessionPlaybackStatus
+STATUS_NAMES = {
+    0: "closed",
+    1: "opened",
+    2: "changing",
+    3: "stopped",
+    4: "playing",
+    5: "paused",
+}
+
+# Pretty names for the source picker; matched case-insensitively as a substring.
+KNOWN_SOURCES = {
+    "spotify": "Spotify",
+    "chrome": "Google Chrome",
+    "msedge": "Microsoft Edge",
+    "firefox": "Mozilla Firefox",
+    "opera": "Opera",
+    "brave": "Brave",
+    "yandex": "Yandex",
+    "vivaldi": "Vivaldi",
+    "zen": "Zen Browser",
+    "vlc": "VLC",
+    "aimp": "AIMP",
+    "foobar2000": "foobar2000",
+    "musicbee": "MusicBee",
+    "winamp": "Winamp",
+    "itunes": "iTunes",
+    "zunemusic": "Media Player",
+    "windowsmediaplayer": "Windows Media Player",
+    "deezer": "Deezer",
+    "tidal": "TIDAL",
+    "youtube": "YouTube Music",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "steam": "Steam",
+    "mpc-hc": "MPC-HC",
+    "potplayer": "PotPlayer",
+}
+
+
+def friendly_source_name(app_id: str) -> str:
+    """Turn an AppUserModelId into something a human wants to read."""
+    if not app_id:
+        return "—"
+    low = app_id.lower()
+    for key, name in KNOWN_SOURCES.items():
+        if key in low:
+            return name
+    name = app_id.split("!")[-1].split("_")[0]
+    if name.lower().endswith(".exe"):
+        name = name[:-4]
+    return name or app_id
+
+
+@dataclass
+class PlayerState:
+    """Snapshot of the currently controlled media session."""
+
+    app_id: str = ""
+    title: str = ""
+    artist: str = ""
+    album: str = ""
+    status: str = "closed"
+    can_play: bool = False
+    can_pause: bool = False
+    can_next: bool = False
+    can_prev: bool = False
+    can_seek: bool = False
+    position: float = 0.0
+    duration: float = 0.0
+    captured_at: float = field(default_factory=time.monotonic)
+    art: bytes | None = None
+    art_key: str = ""
+    connected: bool = False
+
+    @property
+    def playing(self) -> bool:
+        return self.status == "playing"
+
+    @property
+    def has_track(self) -> bool:
+        return self.connected and bool(self.title or self.artist)
+
+    def live_position(self) -> float:
+        """Position interpolated between polls so the progress bar moves smoothly."""
+        if not self.duration:
+            return 0.0
+        pos = self.position
+        if self.playing:
+            pos += time.monotonic() - self.captured_at
+        return max(0.0, min(pos, self.duration))
+
+    def identity(self) -> tuple:
+        """Fields that matter for redraw decisions (position excluded)."""
+        return (
+            self.app_id, self.title, self.artist, self.status, self.can_play,
+            self.can_pause, self.can_next, self.can_prev, self.art_key, self.connected,
+        )
+
+
+async def _read_thumbnail(props) -> bytes | None:
+    ref = props.thumbnail
+    if ref is None:
+        return None
+    try:
+        stream = await ref.open_read_async()
+        size = stream.size
+        if not size:
+            return None
+        reader = DataReader(stream)
+        await reader.load_async(size)
+        return bytes(reader.read_buffer(size))
+    except Exception:
+        return None
+
+
+class MediaController(QObject):
+    """Qt-facing facade over the WinRT session manager."""
+
+    state_changed = Signal(object)  # PlayerState
+    sources_changed = Signal(object)  # list[dict(app_id=..., name=..., playing=bool)]
+    failed = Signal(str)
+
+    def __init__(self, source_mode: str = "auto", pinned_source: str = "") -> None:
+        super().__init__()
+        self._source_mode = source_mode
+        self._pinned_source = pinned_source
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._thread: threading.Thread | None = None
+        self._manager = None
+        self._session = None
+        self._tokens: list[tuple[str, object]] = []
+        self._mgr_tokens: list[tuple[str, object]] = []
+        self._wake: asyncio.Event | None = None
+        self._stopping = False
+        self._art_key = ""
+        self._art: bytes | None = None
+        self._last_sources: list[dict] = []
+        self.state = PlayerState()
+
+    # ------------------------------------------------------------------ public
+
+    @property
+    def sources(self) -> list[dict]:
+        """Last known media sessions (app_id / name / playing)."""
+        return list(self._last_sources)
+
+    def start(self) -> None:
+        if self._thread is not None:
+            return
+        self._thread = threading.Thread(target=self._thread_main, name="smtc", daemon=True)
+        self._thread.start()
+
+    def shutdown(self) -> None:
+        self._stopping = True
+        loop = self._loop
+        if loop is not None and loop.is_running():
+            loop.call_soon_threadsafe(loop.stop)
+
+    def set_source(self, mode: str, pinned: str = "") -> None:
+        self._source_mode = mode
+        self._pinned_source = pinned
+        self._art_key = ""  # force artwork refresh for the new source
+        self._wake_loop()
+
+    def command(self, action: str, value: float | None = None) -> None:
+        """Fire a transport command (play_pause/next/prev/play/pause/stop/seek)."""
+        loop = self._loop
+        if loop is None or not loop.is_running():
+            return
+        asyncio.run_coroutine_threadsafe(self._do_command(action, value), loop)
+
+    def refresh(self) -> None:
+        self._wake_loop()
+
+    # ------------------------------------------------------------------ thread
+
+    def _thread_main(self) -> None:
+        loop = asyncio.new_event_loop()
+        self._loop = loop
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self._run())
+        except RuntimeError:
+            pass  # loop.stop() during shutdown
+        except Exception as exc:  # pragma: no cover - defensive
+            self.failed.emit(str(exc))
+        finally:
+            try:
+                loop.close()
+            except Exception:
+                pass
+
+    async def _run(self) -> None:
+        self._wake = asyncio.Event()
+        try:
+            self._manager = await SessionManager.request_async()
+        except Exception as exc:
+            self.failed.emit(str(exc))  # the UI layer wraps this in a localised message
+            return
+
+        self._mgr_tokens = [
+            ("sessions", self._manager.add_sessions_changed(self._on_manager_event)),
+            ("current", self._manager.add_current_session_changed(self._on_manager_event)),
+        ]
+
+        await self._rebind()
+        while not self._stopping:
+            try:
+                await asyncio.wait_for(self._wake.wait(), timeout=1.0)
+                self._wake.clear()
+                await self._rebind()
+            except asyncio.TimeoutError:
+                await self._rebind(events_only=False)
+
+    def _wake_loop(self) -> None:
+        loop, wake = self._loop, self._wake
+        if loop is None or wake is None or not loop.is_running():
+            return
+        loop.call_soon_threadsafe(wake.set)
+
+    # ------------------------------------------------------------------ events
+
+    def _on_manager_event(self, sender, args) -> None:
+        self._wake_loop()
+
+    def _on_session_event(self, sender, args) -> None:
+        self._wake_loop()
+
+    # ------------------------------------------------------------------ polling
+
+    def _pick_session(self):
+        sessions = list(self._manager.get_sessions())
+        current = self._manager.get_current_session()
+
+        payload = []
+        for s in sessions:
+            try:
+                status = STATUS_NAMES.get(int(s.get_playback_info().playback_status), "closed")
+            except Exception:
+                status = "closed"
+            payload.append(
+                {
+                    "app_id": s.source_app_user_model_id,
+                    "name": friendly_source_name(s.source_app_user_model_id),
+                    "playing": status == "playing",
+                }
+            )
+        if payload != self._last_sources:
+            self._last_sources = payload
+            self.sources_changed.emit(payload)
+
+        if self._source_mode == "pinned" and self._pinned_source:
+            for s in sessions:
+                if s.source_app_user_model_id == self._pinned_source:
+                    return s
+            return None
+        return current
+
+    async def _rebind(self, events_only: bool = True) -> None:
+        if self._manager is None:
+            return
+        try:
+            session = self._pick_session()
+        except Exception:
+            session = None
+
+        if session is not self._session:
+            self._detach_session()
+            self._session = session
+            self._art_key = ""
+            if session is not None:
+                try:
+                    self._tokens = [
+                        ("props", session.add_media_properties_changed(self._on_session_event)),
+                        ("playback", session.add_playback_info_changed(self._on_session_event)),
+                        ("timeline", session.add_timeline_properties_changed(self._on_session_event)),
+                    ]
+                except Exception:
+                    self._tokens = []
+        await self._publish()
+
+    def _detach_session(self) -> None:
+        session = self._session
+        if session is None:
+            return
+        for kind, token in self._tokens:
+            try:
+                if kind == "props":
+                    session.remove_media_properties_changed(token)
+                elif kind == "playback":
+                    session.remove_playback_info_changed(token)
+                else:
+                    session.remove_timeline_properties_changed(token)
+            except Exception:
+                pass
+        self._tokens = []
+
+    async def _publish(self) -> None:
+        session = self._session
+        if session is None:
+            state = PlayerState(
+                app_id=self._pinned_source if self._source_mode == "pinned" else "",
+                connected=False,
+            )
+            self.state = state
+            self.state_changed.emit(state)
+            return
+
+        state = PlayerState(app_id=session.source_app_user_model_id, connected=True)
+        try:
+            props = await session.try_get_media_properties_async()
+            state.title = props.title or ""
+            state.artist = props.artist or ""
+            state.album = props.album_title or ""
+        except Exception:
+            pass
+
+        try:
+            info = session.get_playback_info()
+            state.status = STATUS_NAMES.get(int(info.playback_status), "closed")
+            controls = info.controls
+            state.can_play = bool(controls.is_play_enabled)
+            state.can_pause = bool(controls.is_pause_enabled)
+            state.can_next = bool(controls.is_next_enabled)
+            state.can_prev = bool(controls.is_previous_enabled)
+            state.can_seek = bool(controls.is_playback_position_enabled)
+        except Exception:
+            pass
+
+        try:
+            tl = session.get_timeline_properties()
+            start = tl.start_time.total_seconds()
+            state.duration = max(0.0, tl.end_time.total_seconds() - start)
+            state.position = max(0.0, tl.position.total_seconds() - start)
+        except Exception:
+            pass
+
+        art_key = f"{state.app_id}|{state.title}|{state.artist}|{state.album}"
+        if art_key != self._art_key:
+            try:
+                props = await session.try_get_media_properties_async()
+                self._art = await _read_thumbnail(props)
+            except Exception:
+                self._art = None
+            self._art_key = art_key
+        state.art = self._art
+        state.art_key = self._art_key
+        state.captured_at = time.monotonic()
+
+        self.state = state
+        self.state_changed.emit(state)
+
+    # ------------------------------------------------------------------ commands
+
+    async def _do_command(self, action: str, value: float | None) -> None:
+        session = self._session
+        if session is None:
+            return
+        try:
+            if action == "play_pause":
+                await session.try_toggle_play_pause_async()
+            elif action == "play":
+                await session.try_play_async()
+            elif action == "pause":
+                await session.try_pause_async()
+            elif action == "stop":
+                await session.try_stop_async()
+            elif action == "next_track":
+                await session.try_skip_next_async()
+            elif action == "prev_track":
+                await session.try_skip_previous_async()
+            elif action == "seek" and value is not None:
+                await session.try_change_playback_position_async(int(value * 10_000_000))
+        except Exception:
+            return
+        await asyncio.sleep(0.15)
+        await self._publish()

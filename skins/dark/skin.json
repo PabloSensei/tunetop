@@ -1,0 +1,44 @@
+{
+  "name": "Dark",
+  "author": "built-in",
+
+  "size": [340, 92],
+  "compact_size": [252, 40],
+  "radius": 14,
+  "padding": 10,
+  "spacing": 10,
+  "art_size": 64,
+  "art_radius": 8,
+  "button_size": 26,
+  "button_gap": 6,
+  "progress_height": 4,
+  "progress_radius": 2,
+  "shadow": 16,
+
+  "colors": {
+    "bg": "#242833",
+    "bg2": "#171a22",
+    "border": "#333947",
+    "shadow": "#70000000",
+    "title": "#f3f5f9",
+    "artist": "#98a0b0",
+    "time": "#787f8d",
+    "icon": "#e4e8f0",
+    "icon_hover": "#ffffff",
+    "icon_disabled": "#4b515e",
+    "icon_bg_hover": "#1affffff",
+    "accent": "#6c8cff",
+    "progress_bg": "#3a3f4b",
+    "progress_fg": "#6c8cff",
+    "art_placeholder": "#2a2e38",
+    "chrome": "#7a8290",
+    "chrome_hover": "#ffffff",
+    "close_hover": "#ff5f57"
+  },
+
+  "fonts": {
+    "title": {"family": "Segoe UI", "size": 10, "bold": true},
+    "artist": {"family": "Segoe UI", "size": 9, "bold": false},
+    "time": {"family": "Segoe UI", "size": 8, "bold": false}
+  }
+}
