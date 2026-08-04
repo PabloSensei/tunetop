@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-08-04
+
+### Added
+
+- Two new bundled skins: **Minimal Dark** and **Minimal Light** — flat, minimalist
+  skins with no drop shadow (`shadow: 0`), using a thin 1px border for edge
+  definition instead of a blurred shadow.
+
 ## [1.0.1] — 2026-08-04
 
 ### Fixed

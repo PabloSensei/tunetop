@@ -17,7 +17,8 @@ plugins required.
 - **Transport buttons** — previous / play-pause / next, album art, title and artist
 - **Track progress** with click-to-seek (when the source publishes a timeline)
 - **Skins** — a folder with a `skin.json`: colours, sizes, fonts, corner radius,
-  background image, custom icons. Dark, Light, Neon and Glass are bundled
+  background image, custom icons. Dark, Light, Neon, Glass, Minimal Dark and
+  Minimal Light are bundled
 - **13 interface languages**, following Windows by default
 - **Global hotkeys** — show/hide, play-pause, next, previous, volume
 - **Tray icon** with the current track in its tooltip and a full command menu

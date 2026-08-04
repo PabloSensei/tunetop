@@ -1,0 +1,30 @@
+{
+  "name": "Minimal Dark",
+  "author": "built-in",
+  "extends": "dark",
+
+  "radius": 10,
+  "art_radius": 6,
+  "shadow": 0,
+
+  "colors": {
+    "bg": "#1a1c22",
+    "bg2": "#1a1c22",
+    "border": "#33ffffff",
+    "shadow": "#00000000",
+    "title": "#f2f3f6",
+    "artist": "#9198a6",
+    "time": "#6b7180",
+    "icon": "#e7e9ee",
+    "icon_hover": "#ffffff",
+    "icon_disabled": "#454a56",
+    "icon_bg_hover": "#14ffffff",
+    "accent": "#7c8fff",
+    "progress_bg": "#2c2f38",
+    "progress_fg": "#7c8fff",
+    "art_placeholder": "#242730",
+    "chrome": "#6b7180",
+    "chrome_hover": "#ffffff",
+    "close_hover": "#ff5f57"
+  }
+}

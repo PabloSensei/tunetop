@@ -1,0 +1,30 @@
+{
+  "name": "Minimal Light",
+  "author": "built-in",
+  "extends": "dark",
+
+  "radius": 10,
+  "art_radius": 6,
+  "shadow": 0,
+
+  "colors": {
+    "bg": "#ffffff",
+    "bg2": "#ffffff",
+    "border": "#1f000000",
+    "shadow": "#00000000",
+    "title": "#15171c",
+    "artist": "#5b6270",
+    "time": "#9199a8",
+    "icon": "#22252c",
+    "icon_hover": "#000000",
+    "icon_disabled": "#c7ccd6",
+    "icon_bg_hover": "#0f000000",
+    "accent": "#3d6cff",
+    "progress_bg": "#e4e8ef",
+    "progress_fg": "#3d6cff",
+    "art_placeholder": "#eef1f6",
+    "chrome": "#9aa1af",
+    "chrome_hover": "#15171c",
+    "close_hover": "#e0483d"
+  }
+}
