@@ -85,6 +85,19 @@
   "settings.skin_author": " · 作者：{author}",
   "settings.skins_hint": "皮肤就是一个包含 skin.json 的文件夹（颜色、尺寸、字体、背景图、自定义图标）。把你的文件夹放进皮肤文件夹，然后点击「刷新列表」。皮肤可以通过 \"extends\" 继承另一个皮肤。",
 
+  "settings.group.updates": "更新",
+  "settings.check_updates": "自动检查更新",
+  "settings.check_updates_now": "立即检查更新",
+
+  "update.checking": "正在检查…",
+  "update.up_to_date": "您使用的已是最新版本（{version}）。",
+  "update.check_failed": "无法检查更新：{error}",
+  "update.title": "有可用更新",
+  "update.available_text": "Tunetop {version} 现已推出 — 您当前的版本是 {current}。\n\n现在下载吗？",
+  "update.download": "下载",
+  "update.skip": "跳过此版本",
+  "update.later": "以后再说",
+
   "about.tagline": "一个总在最前的小型音乐控制小部件。",
   "about.mouse": "鼠标操作：",
   "about.drag": "拖动空白处 — 移动小部件",

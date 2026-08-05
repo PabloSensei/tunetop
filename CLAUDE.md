@@ -35,7 +35,13 @@ plus the test script on Python 3.10 and 3.12 — byte-compile failures count as 
 There is no linter or formatter configured.
 
 Standalone exe: `build-exe.bat` (PyInstaller `--onefile --windowed`, bundling `skins/` and
-`locales/` via `--add-data`). Releases are cut by pushing a `v*` tag.
+`locales/` via `--add-data`, `--icon assets/icon.ico`). `build-installer.bat` builds that
+exe and then wraps it in a Windows installer via Inno Setup (`installer/Tunetop.iss`,
+needs `ISCC.exe` on the machine — `choco install innosetup`); the release workflow does
+the same in CI. Releases are cut by pushing a `v*` tag; the workflow reads the version
+from the tag name (stripping the `v`) and passes it to both PyInstaller and Inno Setup.
+`assets/icon.ico` and `docs/icon.png` are generated from the vector icon in `app/icons.py`
+by `tools/generate_icon.py` — rerun it after changing the icon design.
 
 ## Architecture
 

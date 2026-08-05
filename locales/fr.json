@@ -85,6 +85,19 @@
   "settings.skin_author": " · par {author}",
   "settings.skins_hint": "Un thème est un dossier contenant un fichier skin.json (couleurs, tailles, polices, image de fond, icônes personnalisées). Placez votre dossier dans le dossier des thèmes puis cliquez sur « Actualiser la liste ». Un thème peut hériter d’un autre via \"extends\".",
 
+  "settings.group.updates": "Mises à jour",
+  "settings.check_updates": "Rechercher automatiquement les mises à jour",
+  "settings.check_updates_now": "Rechercher une mise à jour maintenant",
+
+  "update.checking": "Vérification…",
+  "update.up_to_date": "Vous avez la dernière version ({version}).",
+  "update.check_failed": "Impossible de vérifier les mises à jour : {error}",
+  "update.title": "Mise à jour disponible",
+  "update.available_text": "Tunetop {version} est disponible — vous avez {current}.\n\nLa télécharger maintenant ?",
+  "update.download": "Télécharger",
+  "update.skip": "Ignorer cette version",
+  "update.later": "Plus tard",
+
   "about.tagline": "Un petit widget de contrôle de la musique, toujours au premier plan.",
   "about.mouse": "Commandes à la souris :",
   "about.drag": "glisser une zone vide — déplacer le widget",

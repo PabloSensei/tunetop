@@ -85,6 +85,19 @@
   "settings.skin_author": " · 作者: {author}",
   "settings.skins_hint": "スキンは skin.json を含むフォルダーです（色、サイズ、フォント、背景画像、独自アイコン）。自分のフォルダーをスキン フォルダーに置いて「一覧を更新」を押してください。スキンは \"extends\" で他のスキンを継承できます。",
 
+  "settings.group.updates": "アップデート",
+  "settings.check_updates": "自動的にアップデートを確認する",
+  "settings.check_updates_now": "今すぐアップデートを確認",
+
+  "update.checking": "確認中…",
+  "update.up_to_date": "最新バージョンです（{version}）。",
+  "update.check_failed": "アップデートを確認できませんでした: {error}",
+  "update.title": "アップデートがあります",
+  "update.available_text": "Tunetop {version} が利用可能です — 現在のバージョンは {current} です。\n\n今すぐダウンロードしますか？",
+  "update.download": "ダウンロード",
+  "update.skip": "このバージョンをスキップ",
+  "update.later": "後で",
+
   "about.tagline": "常に最前面に表示される小さな音楽コントロール ウィジェット。",
   "about.mouse": "マウス操作:",
   "about.drag": "空いている部分をドラッグ — ウィジェットを移動",

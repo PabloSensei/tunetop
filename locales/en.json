@@ -85,6 +85,19 @@
   "settings.skin_author": " · by {author}",
   "settings.skins_hint": "A skin is a folder with a skin.json file (colours, sizes, fonts, background image, custom icons). Put your folder into the skins folder and press “Refresh list”. A skin can inherit from another one via \"extends\".",
 
+  "settings.group.updates": "Updates",
+  "settings.check_updates": "Automatically check for updates",
+  "settings.check_updates_now": "Check for updates now",
+
+  "update.checking": "Checking…",
+  "update.up_to_date": "You have the latest version ({version}).",
+  "update.check_failed": "Could not check for updates: {error}",
+  "update.title": "Update available",
+  "update.available_text": "Tunetop {version} is available — you have {current}.\n\nDownload it now?",
+  "update.download": "Download",
+  "update.skip": "Skip this version",
+  "update.later": "Later",
+
   "about.tagline": "A small always-on-top music control widget.",
   "about.mouse": "Mouse controls:",
   "about.drag": "drag an empty part of the widget — move it",

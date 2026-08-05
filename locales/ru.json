@@ -85,6 +85,19 @@
   "settings.skin_author": " · автор: {author}",
   "settings.skins_hint": "Скин — это папка с файлом skin.json (цвета, размеры, шрифты, картинка фона, свои иконки). Положите свою папку в папку скинов и нажмите «Обновить список». Скин может наследоваться от другого через \"extends\".",
 
+  "settings.group.updates": "Обновления",
+  "settings.check_updates": "Автоматически проверять обновления",
+  "settings.check_updates_now": "Проверить обновления сейчас",
+
+  "update.checking": "Проверка…",
+  "update.up_to_date": "У вас последняя версия ({version}).",
+  "update.check_failed": "Не удалось проверить обновления: {error}",
+  "update.title": "Доступно обновление",
+  "update.available_text": "Доступна версия Tunetop {version} — у вас {current}.\n\nСкачать сейчас?",
+  "update.download": "Скачать",
+  "update.skip": "Пропустить эту версию",
+  "update.later": "Позже",
+
   "about.tagline": "Маленький виджет управления музыкой поверх всех окон.",
   "about.mouse": "Управление мышью:",
   "about.drag": "перетаскивание за пустое место — двигает виджет",

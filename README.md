@@ -1,3 +1,5 @@
+<img src="docs/icon.png" width="96" height="96" align="right" alt="Tunetop icon">
+
 # Tunetop
 
 A small always-on-top music control widget for Windows.
@@ -27,7 +29,21 @@ plugins required.
 - **Start with Windows**, start minimized to tray, opacity, position lock
 - Single instance: launching it again just shows the running widget
 
-## Install and run
+## Install
+
+### Prebuilt installer (recommended)
+
+Download `TunetopSetup-<version>.exe` from the [latest release](https://github.com/PabloSensei/tunetop/releases/latest)
+and run it — no Python required. It installs to your user profile (no admin
+prompt), adds a Start Menu shortcut, and sets up an uninstaller.
+
+Tunetop isn't code-signed, so Windows SmartScreen may still show an
+"unrecognized app" warning the first time — click **More info → Run anyway**.
+A plain single-file `.exe` (also attached to each release, if you'd rather skip
+the installer) is far more likely to be flagged outright by antivirus heuristics,
+since that packaging is common in malware; the installer avoids that.
+
+### Run from source
 
 Requires Python 3.10+ (developed and tested on 3.12).
 
@@ -179,9 +195,13 @@ app/player_widget.py    the widget itself (fully QPainter-drawn)
 app/settings_dialog.py  settings window
 app/application.py      tray, menus, wiring
 app/system.py           autostart and volume keys
+app/updates.py          GitHub release update checks
 locales/                bundled translations
 skins/                  bundled skins
+assets/icon.ico         app icon, baked into the .exe by build-exe.bat
+installer/Tunetop.iss   Inno Setup script, built by build-installer.bat
 tests/test_basics.py    headless checks (no live media session needed)
+tools/generate_icon.py  regenerates docs/icon.png and assets/icon.ico
 ```
 
 Run the tests with:

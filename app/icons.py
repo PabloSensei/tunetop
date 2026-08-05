@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 
 from PySide6.QtCore import QPointF, QRectF, Qt
-from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
+from PySide6.QtGui import QColor, QLinearGradient, QPainter, QPainterPath, QPen
 
 UNIT = 24.0
 
@@ -103,6 +103,9 @@ def _close() -> QPainterPath:
 
 def _note() -> QPainterPath:
     path = QPainterPath()
+    # Winding (not the QPainterPath default of odd-even) so the overlap between
+    # the head and the stem fills solid instead of punching a crescent hole.
+    path.setFillRule(Qt.FillRule.WindingFill)
     path.addEllipse(QPointF(9.0, 17.0), 3.4, 2.8)
     path.addRoundedRect(QRectF(11.2, 5.0, 1.9, 12.0), 0.9, 0.9)
     path.moveTo(11.2, 5.4)
@@ -161,4 +164,32 @@ def paint_icon(painter: QPainter, name: str, rect: QRectF, color: QColor,
     painter.setPen(Qt.PenStyle.NoPen)
     painter.setBrush(color)
     painter.drawPath(path)
+    painter.restore()
+
+
+def paint_app_icon(painter: QPainter, rect: QRectF, accent: QColor) -> None:
+    """Draw the full app icon: a rounded square in `accent`, shaded into a darker
+    corner for depth, a soft top highlight, and the note glyph on top.
+
+    Shared by the live tray/window icon (tinted with the active skin's accent)
+    and `tools/generate_icon.py` (fixed accent, baked into the static assets).
+    """
+    painter.save()
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+    painter.setPen(Qt.PenStyle.NoPen)
+    radius = min(rect.width(), rect.height()) * 0.28
+
+    fill = QLinearGradient(rect.topLeft(), QPointF(rect.left() + rect.width() * 0.15, rect.bottom()))
+    fill.setColorAt(0.0, accent)
+    fill.setColorAt(1.0, accent.darker(135))
+    painter.setBrush(fill)
+    painter.drawRoundedRect(rect, radius, radius)
+
+    highlight = QLinearGradient(rect.topLeft(), QPointF(rect.left(), rect.top() + rect.height() * 0.55))
+    highlight.setColorAt(0.0, QColor(255, 255, 255, 40))
+    highlight.setColorAt(1.0, QColor(255, 255, 255, 0))
+    painter.setBrush(highlight)
+    painter.drawRoundedRect(rect, radius, radius)
+
+    paint_icon(painter, "note", rect, QColor("#ffffff"), 0.62)
     painter.restore()

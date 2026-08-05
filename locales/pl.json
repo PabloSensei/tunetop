@@ -85,6 +85,19 @@
   "settings.skin_author": " · autor: {author}",
   "settings.skins_hint": "Skórka to folder z plikiem skin.json (kolory, rozmiary, czcionki, tło, własne ikony). Umieść swój folder w folderze skórek i kliknij „Odśwież listę”. Skórka może dziedziczyć po innej przez \"extends\".",
 
+  "settings.group.updates": "Aktualizacje",
+  "settings.check_updates": "Automatycznie sprawdzaj aktualizacje",
+  "settings.check_updates_now": "Sprawdź aktualizacje teraz",
+
+  "update.checking": "Sprawdzanie…",
+  "update.up_to_date": "Masz najnowszą wersję ({version}).",
+  "update.check_failed": "Nie udało się sprawdzić aktualizacji: {error}",
+  "update.title": "Dostępna aktualizacja",
+  "update.available_text": "Dostępna jest wersja Tunetop {version} — masz {current}.\n\nPobrać teraz?",
+  "update.download": "Pobierz",
+  "update.skip": "Pomiń tę wersję",
+  "update.later": "Później",
+
   "about.tagline": "Mały widżet do sterowania muzyką, zawsze na wierzchu.",
   "about.mouse": "Obsługa myszą:",
   "about.drag": "przeciąganie za puste miejsce — przesuwa widżet",

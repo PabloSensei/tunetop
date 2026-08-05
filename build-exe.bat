@@ -13,6 +13,7 @@ if not exist "%ROOT%.venv\Scripts\python.exe" (
 
 "%ROOT%.venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed ^
     --name Tunetop ^
+    --icon "%ROOT%assets\icon.ico" ^
     --distpath "%ROOT%dist" --workpath "%ROOT%build" --specpath "%ROOT%build" ^
     --add-data "%ROOT%skins;skins" ^
     --add-data "%ROOT%locales;locales" ^

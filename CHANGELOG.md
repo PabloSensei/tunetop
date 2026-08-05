@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-08-05
+
+### Added
+
+- Update check: on startup (once a day) and on demand from Settings → About,
+  Tunetop checks the GitHub releases page for a newer version and offers to
+  download it, with an option to skip a specific version. Can be turned off
+  in the settings.
+- New app icon (a note glyph on a gradient rounded square, tinted with the active
+  skin's accent) used for the tray icon, window icons and the built .exe, plus a
+  matching fix for a fill-rule bug that punched a small crescent-shaped hole where
+  the note's stem met its head — also visible in the widget's "no album art"
+  placeholder.
+- Windows installer (`TunetopSetup-<version>.exe`, built with Inno Setup) is now
+  published alongside the standalone `Tunetop.exe` on every release. A raw
+  PyInstaller `--onefile` exe is a common false-positive trigger for antivirus
+  heuristics; the installer is the recommended way to get Tunetop.
+
 ## [1.1.0] — 2026-08-04
 
 ### Added

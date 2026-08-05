@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import sys
+from datetime import date
 
 from PySide6.QtCore import QPoint, QRectF, Qt
-from PySide6.QtGui import QAction, QActionGroup, QColor, QIcon, QPainter, QPixmap
+from PySide6.QtGui import QAction, QActionGroup, QIcon, QPainter, QPixmap
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
@@ -17,6 +18,7 @@ from .media import MediaController, PlayerState, friendly_source_name
 from .player_widget import PlayerWidget
 from .settings_dialog import SettingsDialog
 from .skins import available_skins, load_skin
+from .updates import UpdateChecker, offer_update
 
 IPC_KEY = "Tunetop.singleton"
 
@@ -40,6 +42,7 @@ class MusicControlApp:
         self.settings = Settings.load()
         set_language(self.settings.language)
         self.dialog: SettingsDialog | None = None
+        self._update_checker: UpdateChecker | None = None
 
         self.controller = MediaController(self.settings.source_mode, self.settings.pinned_source)
         self.widget = PlayerWidget(self.settings)
@@ -58,6 +61,7 @@ class MusicControlApp:
         self.controller.start()
         if not self.settings.start_in_tray:
             self.widget.show()
+        self._maybe_check_for_updates()
 
     # ----------------------------------------------------------------- wiring
 
@@ -84,24 +88,25 @@ class MusicControlApp:
     # ------------------------------------------------------------------- tray
 
     def app_icon(self) -> QIcon:
-        skin = self.widget.skin
+        accent = self.widget.skin.color("accent")
         icon = QIcon()
-        for size in (16, 24, 32, 48, 64):
+        for size in (16, 24, 32, 48, 64, 128, 256):
             pixmap = QPixmap(size, size)
             pixmap.fill(Qt.GlobalColor.transparent)
             painter = QPainter(pixmap)
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(skin.color("accent"))
-            radius = size * 0.28
-            painter.drawRoundedRect(QRectF(0, 0, size, size), radius, radius)
-            icons.paint_icon(painter, "note", QRectF(0, 0, size, size), QColor("#ffffff"), 0.62)
+            icons.paint_app_icon(painter, QRectF(0, 0, size, size), accent)
             painter.end()
             icon.addPixmap(pixmap)
         return icon
 
+    def _refresh_icon(self) -> None:
+        """Recompute the icon (skin accent may have changed) and apply it everywhere."""
+        icon = self.app_icon()
+        self.tray.setIcon(icon)
+        self.app.setWindowIcon(icon)  # default for dialogs/message boxes with no icon of their own
+
     def _build_tray(self) -> None:
-        self.tray.setIcon(self.app_icon())
+        self._refresh_icon()
         self.tray.setToolTip("Tunetop")
         self.tray.activated.connect(self._on_tray_activated)
         self.tray.setContextMenu(self._build_menu())
@@ -241,7 +246,7 @@ class MusicControlApp:
         self.settings.skin = skin_id
         self.settings.save()
         self.widget.apply_skin(skin_id)
-        self.tray.setIcon(self.app_icon())
+        self._refresh_icon()
         if self.dialog is not None:
             self.dialog._reload_skins()
 
@@ -276,6 +281,25 @@ class MusicControlApp:
     def _on_failure(self, message: str) -> None:
         QMessageBox.critical(None, "Tunetop", tr("error.smtc", error=message))
 
+    # ------------------------------------------------------------------ updates
+
+    def _maybe_check_for_updates(self) -> None:
+        if not self.settings.check_for_updates:
+            return
+        today = date.today().isoformat()
+        if self.settings.last_update_check == today:
+            return
+        self.settings.last_update_check = today
+        self.settings.save()
+        self._update_checker = UpdateChecker()
+        self._update_checker.available.connect(self._on_update_available)
+        self._update_checker.start()
+
+    def _on_update_available(self, release) -> None:
+        if release.version == self.settings.skipped_update_version:
+            return
+        offer_update(None, self.settings, release)
+
     # --------------------------------------------------------------- settings
 
     def show_settings(self) -> None:
@@ -301,7 +325,7 @@ class MusicControlApp:
             self.widget.refresh_window_flags()
         elif hint == "skin":
             self.widget.apply_skin(self.settings.skin)
-            self.tray.setIcon(self.app_icon())
+            self._refresh_icon()
         elif hint == "layout":
             self.widget.apply_skin(self.settings.skin)
         elif hint == "source":

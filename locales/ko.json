@@ -85,6 +85,19 @@
   "settings.skin_author": " · 제작: {author}",
   "settings.skins_hint": "스킨은 skin.json 파일이 들어 있는 폴더입니다 (색상, 크기, 글꼴, 배경 이미지, 사용자 아이콘). 자신의 폴더를 스킨 폴더에 넣고 “목록 새로 고침”을 누르세요. 스킨은 \"extends\"로 다른 스킨을 상속할 수 있습니다.",
 
+  "settings.group.updates": "업데이트",
+  "settings.check_updates": "자동으로 업데이트 확인",
+  "settings.check_updates_now": "지금 업데이트 확인",
+
+  "update.checking": "확인 중…",
+  "update.up_to_date": "최신 버전을 사용 중입니다 ({version}).",
+  "update.check_failed": "업데이트를 확인할 수 없습니다: {error}",
+  "update.title": "업데이트 사용 가능",
+  "update.available_text": "Tunetop {version} 버전을 사용할 수 있습니다 — 현재 버전은 {current}입니다.\n\n지금 다운로드하시겠습니까?",
+  "update.download": "다운로드",
+  "update.skip": "이 버전 건너뛰기",
+  "update.later": "나중에",
+
   "about.tagline": "항상 위에 표시되는 작은 음악 제어 위젯입니다.",
   "about.mouse": "마우스 조작:",
   "about.drag": "빈 곳을 드래그 — 위젯 이동",

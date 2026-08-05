@@ -85,6 +85,19 @@
   "settings.skin_author": " · por {author}",
   "settings.skins_hint": "Um skin é uma pasta com o arquivo skin.json (cores, tamanhos, fontes, imagem de fundo, ícones próprios). Coloque sua pasta na pasta de skins e clique em “Atualizar a lista”. Um skin pode herdar de outro por meio de \"extends\".",
 
+  "settings.group.updates": "Atualizações",
+  "settings.check_updates": "Verificar atualizações automaticamente",
+  "settings.check_updates_now": "Verificar atualizações agora",
+
+  "update.checking": "Verificando…",
+  "update.up_to_date": "Você tem a versão mais recente ({version}).",
+  "update.check_failed": "Não foi possível verificar atualizações: {error}",
+  "update.title": "Atualização disponível",
+  "update.available_text": "O Tunetop {version} está disponível — você tem a {current}.\n\nBaixar agora?",
+  "update.download": "Baixar",
+  "update.skip": "Pular esta versão",
+  "update.later": "Mais tarde",
+
   "about.tagline": "Um pequeno widget de controle de música sempre visível.",
   "about.mouse": "Controles do mouse:",
   "about.drag": "arrastar uma área vazia — move o widget",

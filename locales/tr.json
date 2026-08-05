@@ -85,6 +85,19 @@
   "settings.skin_author": " · {author} tarafından",
   "settings.skins_hint": "Tema, içinde skin.json dosyası bulunan bir klasördür (renkler, boyutlar, yazı tipleri, arka plan görseli, kendi simgeleri). Klasörünüzü tema klasörüne koyun ve “Listeyi yenile”ye basın. Bir tema \"extends\" ile başka bir temadan devralabilir.",
 
+  "settings.group.updates": "Güncellemeler",
+  "settings.check_updates": "Güncellemeleri otomatik olarak denetle",
+  "settings.check_updates_now": "Şimdi güncellemeleri denetle",
+
+  "update.checking": "Denetleniyor…",
+  "update.up_to_date": "En son sürüme sahipsiniz ({version}).",
+  "update.check_failed": "Güncellemeler denetlenemedi: {error}",
+  "update.title": "Güncelleme mevcut",
+  "update.available_text": "Tunetop {version} kullanılabilir — sizde {current} var.\n\nŞimdi indirilsin mi?",
+  "update.download": "İndir",
+  "update.skip": "Bu sürümü atla",
+  "update.later": "Daha sonra",
+
   "about.tagline": "Her zaman üstte duran küçük bir müzik denetim bileşeni.",
   "about.mouse": "Fare ile kullanım:",
   "about.drag": "boş bir yerden sürükleyin — bileşeni taşır",

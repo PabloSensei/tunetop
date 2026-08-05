@@ -19,6 +19,7 @@ from .hotkeys import MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN, format_hotkey, pa
 from .i18n import available_languages, language_name, resolve_language, tr
 from .media import friendly_source_name
 from .skins import available_skins, load_skin
+from .updates import UpdateChecker, offer_update
 from . import system
 
 FUNCTION_KEYS = set(range(0x70, 0x88))  # F1..F24
@@ -102,6 +103,7 @@ class SettingsDialog(QDialog):
         self.controller = controller
         self._sources: list[dict] = controller.sources
         self._loading = True
+        self._update_checker: UpdateChecker | None = None
 
         self.setWindowTitle(tr("settings.title"))
         self.setWindowFlag(Qt.WindowType.WindowContextHelpButtonHint, False)
@@ -475,8 +477,48 @@ class SettingsDialog(QDialog):
         text.setWordWrap(True)
         text.setTextFormat(Qt.TextFormat.RichText)
         layout.addWidget(text)
+
+        update_box = QGroupBox(tr("settings.group.updates"))
+        update_layout = QVBoxLayout(update_box)
+        self.cb_check_updates = QCheckBox(tr("settings.check_updates"))
+        self.cb_check_updates.setChecked(self.settings.check_for_updates)
+        self.cb_check_updates.toggled.connect(lambda v: self._set("check_for_updates", v, ""))
+        update_layout.addWidget(self.cb_check_updates)
+
+        check_row = QHBoxLayout()
+        check_button = QPushButton(tr("settings.check_updates_now"))
+        check_button.clicked.connect(self._on_check_updates_now)
+        check_row.addWidget(check_button)
+        check_row.addStretch(1)
+        update_layout.addLayout(check_row)
+
+        self.lb_update_status = QLabel("")
+        self.lb_update_status.setWordWrap(True)
+        update_layout.addWidget(self.lb_update_status)
+
+        layout.addWidget(update_box)
         layout.addStretch(1)
         return page
+
+    def _on_check_updates_now(self) -> None:
+        self.lb_update_status.setText(tr("update.checking"))
+        self._update_checker = UpdateChecker()
+        self._update_checker.available.connect(self._on_manual_update_available)
+        self._update_checker.up_to_date.connect(self._on_manual_update_up_to_date)
+        self._update_checker.failed.connect(self._on_manual_update_failed)
+        self._update_checker.start()
+
+    def _on_manual_update_available(self, release) -> None:
+        self.lb_update_status.setText("")
+        offer_update(self, self.settings, release)
+
+    def _on_manual_update_up_to_date(self) -> None:
+        from . import __version__
+
+        self.lb_update_status.setText(tr("update.up_to_date", version=__version__))
+
+    def _on_manual_update_failed(self, error: str) -> None:
+        self.lb_update_status.setText(tr("update.check_failed", error=error))
 
     # ------------------------------------------------------------- helpers
 

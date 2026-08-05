@@ -85,6 +85,19 @@
   "settings.skin_author": " · автор: {author}",
   "settings.skins_hint": "Скін — це тека з файлом skin.json (кольори, розміри, шрифти, фонове зображення, власні піктограми). Покладіть свою теку до теки скінів і натисніть «Оновити список». Скін може успадковуватися від іншого через \"extends\".",
 
+  "settings.group.updates": "Оновлення",
+  "settings.check_updates": "Автоматично перевіряти оновлення",
+  "settings.check_updates_now": "Перевірити оновлення зараз",
+
+  "update.checking": "Перевірка…",
+  "update.up_to_date": "У вас остання версія ({version}).",
+  "update.check_failed": "Не вдалося перевірити оновлення: {error}",
+  "update.title": "Доступне оновлення",
+  "update.available_text": "Доступна версія Tunetop {version} — у вас {current}.\n\nЗавантажити зараз?",
+  "update.download": "Завантажити",
+  "update.skip": "Пропустити цю версію",
+  "update.later": "Пізніше",
+
   "about.tagline": "Маленький віджет керування музикою поверх усіх вікон.",
   "about.mouse": "Керування мишею:",
   "about.drag": "перетягування за порожнє місце — рухає віджет",

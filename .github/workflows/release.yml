@@ -34,9 +34,19 @@ jobs:
         run: >
           pyinstaller --noconfirm --clean --onefile --windowed
           --name Tunetop
+          --icon assets/icon.ico
           --add-data "skins;skins"
           --add-data "locales;locales"
           main.py
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$version" installer\Tunetop.iss
 
       - name: Package
         run: |
@@ -53,6 +63,7 @@ jobs:
           name: Tunetop-windows
           path: |
             dist/Tunetop.exe
+            dist/TunetopSetup-*.exe
             Tunetop-*.zip
 
       - name: Publish release
@@ -63,4 +74,5 @@ jobs:
           generate_release_notes: true
           files: |
             dist/Tunetop.exe
+            dist/TunetopSetup-*.exe
             Tunetop-*.zip

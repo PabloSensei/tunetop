@@ -120,6 +120,11 @@ class Settings:
     source_mode: str = "auto"  # "auto" | "pinned"
     pinned_source: str = ""  # AppUserModelId of the pinned session
 
+    # updates
+    check_for_updates: bool = True
+    skipped_update_version: str = ""
+    last_update_check: str = ""  # ISO date "YYYY-MM-DD"; "" means never checked
+
     @classmethod
     def load(cls) -> "Settings":
         path = config_file()
