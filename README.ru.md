@@ -2,6 +2,14 @@
 
 # Tunetop
 
+<p align="center">
+  <a href="https://github.com/PabloSensei/tunetop/releases/latest"><img alt="Релиз" src="https://img.shields.io/github/v/release/PabloSensei/tunetop"></a>
+  <a href="https://github.com/PabloSensei/tunetop/releases"><img alt="Загрузки" src="https://img.shields.io/github/downloads/PabloSensei/tunetop/total"></a>
+  <a href="LICENSE"><img alt="Лицензия" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue"></a>
+  <a href="https://github.com/PabloSensei/tunetop/stargazers"><img alt="Звёзды" src="https://img.shields.io/github/stars/PabloSensei/tunetop"></a>
+  <a href="https://github.com/PabloSensei/tunetop/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/PabloSensei/tunetop/actions/workflows/ci.yml/badge.svg"></a>
+</p>
+
 Маленький виджет управления музыкой поверх всех окон для Windows.
 
 *[English version](README.md)*

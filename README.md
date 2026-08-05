@@ -2,6 +2,14 @@
 
 # Tunetop
 
+<p align="center">
+  <a href="https://github.com/PabloSensei/tunetop/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/PabloSensei/tunetop"></a>
+  <a href="https://github.com/PabloSensei/tunetop/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/PabloSensei/tunetop/total"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue"></a>
+  <a href="https://github.com/PabloSensei/tunetop/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/PabloSensei/tunetop"></a>
+  <a href="https://github.com/PabloSensei/tunetop/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/PabloSensei/tunetop/actions/workflows/ci.yml/badge.svg"></a>
+</p>
+
 A small always-on-top music control widget for Windows.
 
 *[Русская версия](README.ru.md)*
