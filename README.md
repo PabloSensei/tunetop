@@ -1,4 +1,4 @@
-<img src="docs/icon.png" width="96" height="96" align="right" alt="Tunetop icon">
+<p align="center"><img src="docs/icon.png" width="96" height="96" alt="Tunetop icon"></p>
 
 # Tunetop
 
