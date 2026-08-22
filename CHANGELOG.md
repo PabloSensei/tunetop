@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] — 2026-08-22
+
+### Fixed
+
+- Album art could keep showing the previous track's cover after a track change.
+  Artwork was cached under a key built from the track metadata and read exactly
+  once, but players such as Feishin publish the new title before the new
+  thumbnail — so that single read returned the old cover and it stuck until the
+  next track. The thumbnail is now re-read for a few polls after a metadata
+  change, until it stops matching the previous track, and the artwork key
+  includes a digest of the image bytes so late-arriving covers still trigger a
+  repaint.
+- The media session was detached and re-subscribed once per second. WinRT returns
+  a fresh wrapper object from every `get_current_session()` call, so the identity
+  check in `_rebind` never matched; sessions are now compared by their app id.
+- With "hide the widget when nothing is playing" enabled, showing the widget by
+  hand (hotkey, tray, second launch) hid it again on the next poll a second
+  later. An explicit show now sticks until a track actually appears.
+
+### Added
+
+- Feishin is recognised by name in the source picker.
+
 ## [1.2.0] — 2026-08-05
 
 ### Added

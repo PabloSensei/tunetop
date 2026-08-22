@@ -43,6 +43,9 @@ class MusicControlApp:
         set_language(self.settings.language)
         self.dialog: SettingsDialog | None = None
         self._update_checker: UpdateChecker | None = None
+        # Set when the user asks for the widget explicitly; suppresses the
+        # "hide when nothing is playing" rule until a track shows up.
+        self._forced_visible = False
 
         self.controller = MediaController(self.settings.source_mode, self.settings.pinned_source)
         self.widget = PlayerWidget(self.settings)
@@ -224,11 +227,13 @@ class MusicControlApp:
             self.show_widget()
 
     def show_widget(self) -> None:
+        self._forced_visible = True
         self.widget.show()
         self.widget.raise_()
         self._refresh_menu()
 
     def hide_widget(self) -> None:
+        self._forced_visible = False
         self.widget.save_position()
         self.widget.hide()
         self._refresh_menu()
@@ -272,10 +277,11 @@ class MusicControlApp:
         self.tray.setToolTip(tip[:127])  # Windows tooltip limit
 
         if self.settings.hide_when_no_music:
-            should_show = state.has_track
-            if should_show and not self.widget.isVisible():
-                self.widget.show()
-            elif not should_show and self.widget.isVisible():
+            if state.has_track:
+                self._forced_visible = False
+                if not self.widget.isVisible():
+                    self.widget.show()
+            elif self.widget.isVisible() and not self._forced_visible:
                 self.widget.hide()
 
     def _on_failure(self, message: str) -> None:

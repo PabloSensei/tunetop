@@ -9,6 +9,7 @@ AIMP, VLC, Media Player, etc.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import threading
 import time
 from dataclasses import dataclass, field
@@ -19,6 +20,11 @@ from winsdk.windows.media.control import (
     GlobalSystemMediaTransportControlsSessionManager as SessionManager,
 )
 from winsdk.windows.storage.streams import DataReader
+
+# Some players (Electron ones especially) publish the new title before the new
+# thumbnail, so a single read right after a track change hands back the previous
+# cover. Keep re-reading for a few polls until the artwork catches up.
+ART_SETTLE_POLLS = 5
 
 # GlobalSystemMediaTransportControlsSessionPlaybackStatus
 STATUS_NAMES = {
@@ -45,6 +51,7 @@ KNOWN_SOURCES = {
     "aimp": "AIMP",
     "foobar2000": "foobar2000",
     "musicbee": "MusicBee",
+    "feishin": "Feishin",
     "winamp": "Winamp",
     "itunes": "iTunes",
     "zunemusic": "Media Player",
@@ -151,12 +158,17 @@ class MediaController(QObject):
         self._thread: threading.Thread | None = None
         self._manager = None
         self._session = None
+        self._session_key = ""
+        self._events_session = None
         self._tokens: list[tuple[str, object]] = []
         self._mgr_tokens: list[tuple[str, object]] = []
         self._wake: asyncio.Event | None = None
         self._stopping = False
         self._art_key = ""
+        self._art_meta_key = ""
         self._art: bytes | None = None
+        self._art_previous: bytes | None = None
+        self._art_retries = 0
         self._last_sources: list[dict] = []
         self.state = PlayerState()
 
@@ -182,7 +194,7 @@ class MediaController(QObject):
     def set_source(self, mode: str, pinned: str = "") -> None:
         self._source_mode = mode
         self._pinned_source = pinned
-        self._art_key = ""  # force artwork refresh for the new source
+        self._reset_art()  # force artwork refresh for the new source
         self._wake_loop()
 
     def command(self, action: str, value: float | None = None) -> None:
@@ -287,10 +299,17 @@ class MediaController(QObject):
         except Exception:
             session = None
 
-        if session is not self._session:
+        # WinRT hands back a fresh wrapper on every call, so identity would flap
+        # once per poll; the app id is what actually tells sessions apart.
+        try:
+            key = session.source_app_user_model_id if session is not None else ""
+        except Exception:
+            session, key = None, ""
+        self._session = session  # always keep the newest wrapper
+        if key != self._session_key:
             self._detach_session()
-            self._session = session
-            self._art_key = ""
+            self._session_key = key
+            self._reset_art()
             if session is not None:
                 try:
                     self._tokens = [
@@ -298,12 +317,15 @@ class MediaController(QObject):
                         ("playback", session.add_playback_info_changed(self._on_session_event)),
                         ("timeline", session.add_timeline_properties_changed(self._on_session_event)),
                     ]
+                    self._events_session = session
                 except Exception:
                     self._tokens = []
+                    self._events_session = None
         await self._publish()
 
     def _detach_session(self) -> None:
-        session = self._session
+        session = self._events_session
+        self._events_session = None
         if session is None:
             return
         for kind, token in self._tokens:
@@ -318,6 +340,30 @@ class MediaController(QObject):
                 pass
         self._tokens = []
 
+    def _reset_art(self) -> None:
+        self._art_key = ""
+        self._art_meta_key = ""
+        self._art = None
+        self._art_previous = None
+        self._art_retries = 0
+
+    async def _read_art(self, session, props) -> None:
+        """Re-read the thumbnail, retrying while it still shows the previous track."""
+        try:
+            if props is None:
+                props = await session.try_get_media_properties_async()
+            art = await _read_thumbnail(props)
+        except Exception:
+            art = None
+        if self._art_retries > 0:
+            self._art_retries -= 1
+        if art is not None and art != self._art_previous:
+            self._art_previous = None  # the player caught up; stop re-reading
+            self._art_retries = 0
+        self._art = art
+        digest = hashlib.sha1(art).hexdigest()[:12] if art else "none"
+        self._art_key = f"{self._art_meta_key}|{digest}"
+
     async def _publish(self) -> None:
         session = self._session
         if session is None:
@@ -330,6 +376,7 @@ class MediaController(QObject):
             return
 
         state = PlayerState(app_id=session.source_app_user_model_id, connected=True)
+        props = None
         try:
             props = await session.try_get_media_properties_async()
             state.title = props.title or ""
@@ -358,14 +405,14 @@ class MediaController(QObject):
         except Exception:
             pass
 
-        art_key = f"{state.app_id}|{state.title}|{state.artist}|{state.album}"
-        if art_key != self._art_key:
-            try:
-                props = await session.try_get_media_properties_async()
-                self._art = await _read_thumbnail(props)
-            except Exception:
-                self._art = None
-            self._art_key = art_key
+        meta_key = f"{state.app_id}|{state.title}|{state.artist}|{state.album}"
+        if meta_key != self._art_meta_key:
+            self._art_meta_key = meta_key
+            self._art_previous = self._art  # what the *previous* track looked like
+            self._art_retries = ART_SETTLE_POLLS
+            await self._read_art(session, props)
+        elif self._art_retries > 0:
+            await self._read_art(session, props)
         state.art = self._art
         state.art_key = self._art_key
         state.captured_at = time.monotonic()
