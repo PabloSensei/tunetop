@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The licence shown by the installer had an unfilled `<YOUR NAME>` placeholder
+  where the copyright holder belongs.
+
 ## [1.2.1] — 2026-08-22
 
 ### Fixed
@@ -30,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - With "hide the widget when nothing is playing" enabled, showing the widget by
   hand (hotkey, tray, second launch) hid it again on the next poll a second
   later. An explicit show now sticks until a track actually appears.
+
 
 ### Added
 
