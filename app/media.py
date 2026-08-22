@@ -13,6 +13,7 @@ import hashlib
 import threading
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 from PySide6.QtCore import QObject, Signal
 
@@ -127,6 +128,21 @@ class PlayerState:
         )
 
 
+def _timeline_stamp(tl):
+    """The timeline's last_updated_time, or None when the player blanked it.
+
+    Players that reset their timeline report the FILETIME epoch (1601) rather
+    than an empty value, which would otherwise read as a centuries-old report.
+    """
+    try:
+        updated = tl.last_updated_time
+    except Exception:
+        return None
+    if updated is None or updated.year < 2000:
+        return None
+    return updated
+
+
 async def _read_thumbnail(props) -> bytes | None:
     ref = props.thumbnail
     if ref is None:
@@ -169,6 +185,11 @@ class MediaController(QObject):
         self._art: bytes | None = None
         self._art_previous: bytes | None = None
         self._art_retries = 0
+        self._pos = 0.0
+        self._pos_at = 0.0
+        self._pos_updated: datetime | None = None
+        self._pos_playing = False
+        self._duration = 0.0
         self._last_sources: list[dict] = []
         self.state = PlayerState()
 
@@ -310,6 +331,7 @@ class MediaController(QObject):
             self._detach_session()
             self._session_key = key
             self._reset_art()
+            self._reset_position()
             if session is not None:
                 try:
                     self._tokens = [
@@ -339,6 +361,56 @@ class MediaController(QObject):
             except Exception:
                 pass
         self._tokens = []
+
+    def _reset_position(self) -> None:
+        self._pos = 0.0
+        self._pos_at = 0.0
+        self._pos_updated = None
+        self._pos_playing = False
+        self._duration = 0.0
+
+    def _track_duration(self, duration: float) -> float:
+        """Hold on to the last real duration; some players blank it while paused."""
+        if duration > 0:
+            self._duration = duration
+        return self._duration
+
+    def _report_age(self, updated, playing: bool, duration: float) -> float:
+        """How long ago a timeline report was made, if that is worth trusting."""
+        if updated is None or not playing:
+            return 0.0
+        try:
+            age = (datetime.now(timezone.utc) - updated).total_seconds()
+        except Exception:
+            return 0.0
+        limit = duration if duration > 0 else 3600.0
+        return age if 0.0 <= age <= limit else 0.0
+
+    def _advance_position(self, raw: float, updated, duration: float,
+                          playing: bool, usable: bool) -> float:
+        """Track the playback position even when the player stops publishing it.
+
+        Several players (Feishin, some Electron apps) push their timeline once per
+        track and never refresh it, so the reported position sits at whatever it
+        was when the track started, and blank it out entirely while paused. A
+        reading is only trusted when it is usable and its ``last_updated_time``
+        has changed; the rest of the time we run our own clock.
+        """
+        now = time.monotonic()
+        if not usable:
+            if self._pos_playing and self._pos_at:
+                self._pos += now - self._pos_at  # keep going on a blanked timeline
+        elif updated is None or updated != self._pos_updated:
+            self._pos_updated = updated
+            self._pos = raw + self._report_age(updated, playing, duration)
+        elif self._pos_playing:
+            self._pos += now - self._pos_at
+        if duration > 0:
+            self._pos = min(self._pos, duration)
+        self._pos = max(0.0, self._pos)
+        self._pos_at = now
+        self._pos_playing = playing
+        return self._pos
 
     def _reset_art(self) -> None:
         self._art_key = ""
@@ -385,6 +457,9 @@ class MediaController(QObject):
         except Exception:
             pass
 
+        meta_key = f"{state.app_id}|{state.title}|{state.artist}|{state.album}"
+        new_track = meta_key != self._art_meta_key
+
         try:
             info = session.get_playback_info()
             state.status = STATUS_NAMES.get(int(info.playback_status), "closed")
@@ -397,16 +472,22 @@ class MediaController(QObject):
         except Exception:
             pass
 
+        if new_track:
+            self._reset_position()
         try:
             tl = session.get_timeline_properties()
             start = tl.start_time.total_seconds()
-            state.duration = max(0.0, tl.end_time.total_seconds() - start)
-            state.position = max(0.0, tl.position.total_seconds() - start)
+            duration = max(0.0, tl.end_time.total_seconds() - start)
+            raw_position = max(0.0, tl.position.total_seconds() - start)
+            updated = _timeline_stamp(tl)
         except Exception:
-            pass
+            duration, raw_position, updated = 0.0, 0.0, None
+        state.duration = self._track_duration(duration)
+        state.position = self._advance_position(
+            raw_position, updated, state.duration, state.playing, usable=duration > 0
+        )
 
-        meta_key = f"{state.app_id}|{state.title}|{state.artist}|{state.album}"
-        if meta_key != self._art_meta_key:
+        if new_track:
             self._art_meta_key = meta_key
             self._art_previous = self._art  # what the *previous* track looked like
             self._art_retries = ART_SETTLE_POLLS
@@ -441,6 +522,7 @@ class MediaController(QObject):
                 await session.try_skip_previous_async()
             elif action == "seek" and value is not None:
                 await session.try_change_playback_position_async(int(value * 10_000_000))
+                self._reset_position()  # take the player's word for it after a seek
         except Exception:
             return
         await asyncio.sleep(0.15)

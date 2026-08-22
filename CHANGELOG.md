@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The media session was detached and re-subscribed once per second. WinRT returns
   a fresh wrapper object from every `get_current_session()` call, so the identity
   check in `_rebind` never matched; sessions are now compared by their app id.
+- The progress bar stuck at a fixed second instead of following the song. Players
+  such as Feishin publish their timeline once per track and never refresh it, and
+  every poll re-stamped that stale reading as if it were current, cancelling the
+  interpolation. Readings are now only trusted when their `last_updated_time`
+  changes; otherwise Tunetop runs its own clock. Blanked timelines (a zeroed
+  duration, or the FILETIME epoch of 1601 in place of a timestamp) are ignored
+  rather than taken at face value, which previously produced positions billions
+  of seconds long after a seek.
 - With "hide the widget when nothing is playing" enabled, showing the widget by
   hand (hotkey, tray, second launch) hid it again on the next poll a second
   later. An explicit show now sticks until a track actually appears.
