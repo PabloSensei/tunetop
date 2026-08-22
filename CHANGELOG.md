@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The startup update check silently did nothing once it had run earlier the same
+  day, so launching an outdated build often reported nothing until the check was
+  triggered by hand from Settings → About. The date was also stamped *before* the
+  request, so a check that failed offline was not retried until the next day.
+  The stamp is now a timestamp written only after a completed check, with a six
+  hour interval.
+
+### Added
+
+- An update found by an earlier check is remembered, so a newer version is
+  reported right at startup without waiting on the network.
+
 ## [1.2.2] — 2026-08-22
 
 ### Fixed

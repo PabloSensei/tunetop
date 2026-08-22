@@ -11,6 +11,7 @@ import json
 import threading
 import urllib.request
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 from PySide6.QtCore import QObject, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
@@ -24,6 +25,9 @@ REPO = "PabloSensei/tunetop"
 RELEASES_API_URL = f"https://api.github.com/repos/{REPO}/releases/latest"
 RELEASES_PAGE_URL = f"https://github.com/{REPO}/releases/latest"
 REQUEST_TIMEOUT = 8.0
+# How long a completed check stays good for. Startup still reports an already
+# known update immediately, so this only limits how often GitHub is asked.
+CHECK_INTERVAL = timedelta(hours=6)
 
 
 def parse_version(text: str) -> tuple[int, ...]:
@@ -42,6 +46,25 @@ def parse_version(text: str) -> tuple[int, ...]:
 
 def is_newer(candidate: str, current: str) -> bool:
     return parse_version(candidate) > parse_version(current)
+
+
+def check_is_due(last_check: str, now: datetime | None = None) -> bool:
+    """True when the last completed check is old enough to run another one.
+
+    Tolerates the plain "YYYY-MM-DD" that versions up to 1.2.2 wrote, and treats
+    anything unparseable as "never checked".
+    """
+    if not last_check:
+        return True
+    try:
+        stamp = datetime.fromisoformat(last_check)
+    except ValueError:
+        return True
+    return (now or datetime.now()) - stamp >= CHECK_INTERVAL
+
+
+def check_stamp() -> str:
+    return datetime.now().isoformat(timespec="seconds")
 
 
 @dataclass

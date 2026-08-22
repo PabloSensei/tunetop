@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import sys
-from datetime import date
 
-from PySide6.QtCore import QPoint, QRectF, Qt
+from PySide6.QtCore import QPoint, QRectF, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QPainter, QPixmap
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
-from . import icons, system
+from . import __version__, icons, system
 from .config import Settings, migrate_legacy_config
 from .hotkeys import HotkeyManager
 from .i18n import set_language, tr
@@ -18,7 +17,15 @@ from .media import MediaController, PlayerState, friendly_source_name
 from .player_widget import PlayerWidget
 from .settings_dialog import SettingsDialog
 from .skins import available_skins, load_skin
-from .updates import UpdateChecker, offer_update
+from .updates import (
+    RELEASES_PAGE_URL,
+    ReleaseInfo,
+    UpdateChecker,
+    check_is_due,
+    check_stamp,
+    is_newer,
+    offer_update,
+)
 
 IPC_KEY = "Tunetop.singleton"
 
@@ -292,19 +299,42 @@ class MusicControlApp:
     def _maybe_check_for_updates(self) -> None:
         if not self.settings.check_for_updates:
             return
-        today = date.today().isoformat()
-        if self.settings.last_update_check == today:
+        if self._offer_known_update():
+            return  # an earlier run already found it; no point asking GitHub again
+        if not check_is_due(self.settings.last_update_check):
             return
-        self.settings.last_update_check = today
-        self.settings.save()
         self._update_checker = UpdateChecker()
         self._update_checker.available.connect(self._on_update_available)
+        self._update_checker.up_to_date.connect(self._on_update_none)
         self._update_checker.start()
 
+    def _offer_known_update(self) -> bool:
+        """Report an update a previous run found, without waiting on the network."""
+        known = self.settings.latest_known_version
+        if not known or not is_newer(known, __version__):
+            return False
+        if known == self.settings.skipped_update_version:
+            return False  # deliberately ignored; a fresh check may turn up a later one
+        # The event loop is not running yet while the app is being constructed.
+        QTimer.singleShot(
+            0, lambda: offer_update(None, self.settings, ReleaseInfo(known, RELEASES_PAGE_URL))
+        )
+        return True
+
     def _on_update_available(self, release) -> None:
+        self._record_check(release.version)
         if release.version == self.settings.skipped_update_version:
             return
         offer_update(None, self.settings, release)
+
+    def _on_update_none(self) -> None:
+        self._record_check("")
+
+    def _record_check(self, latest: str) -> None:
+        """Stamp a *completed* check, so a failed one is retried on the next launch."""
+        self.settings.last_update_check = check_stamp()
+        self.settings.latest_known_version = latest
+        self.settings.save()
 
     # --------------------------------------------------------------- settings
 

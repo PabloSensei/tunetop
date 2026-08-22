@@ -19,7 +19,7 @@ from .hotkeys import MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN, format_hotkey, pa
 from .i18n import available_languages, language_name, resolve_language, tr
 from .media import friendly_source_name
 from .skins import available_skins, load_skin
-from .updates import UpdateChecker, offer_update
+from .updates import UpdateChecker, check_stamp, offer_update
 from . import system
 
 FUNCTION_KEYS = set(range(0x70, 0x88))  # F1..F24
@@ -510,12 +510,20 @@ class SettingsDialog(QDialog):
 
     def _on_manual_update_available(self, release) -> None:
         self.lb_update_status.setText("")
+        self._record_check(release.version)
         offer_update(self, self.settings, release)
 
     def _on_manual_update_up_to_date(self) -> None:
         from . import __version__
 
+        self._record_check("")
         self.lb_update_status.setText(tr("update.up_to_date", version=__version__))
+
+    def _record_check(self, latest: str) -> None:
+        """Share the result with the startup check, which reads it back on launch."""
+        self.settings.last_update_check = check_stamp()
+        self.settings.latest_known_version = latest
+        self.settings.save()
 
     def _on_manual_update_failed(self, error: str) -> None:
         self.lb_update_status.setText(tr("update.check_failed", error=error))

@@ -123,7 +123,8 @@ class Settings:
     # updates
     check_for_updates: bool = True
     skipped_update_version: str = ""
-    last_update_check: str = ""  # ISO date "YYYY-MM-DD"; "" means never checked
+    last_update_check: str = ""  # ISO timestamp of the last completed check; "" means never
+    latest_known_version: str = ""  # newest version GitHub reported, so a restart can say so offline
 
     @classmethod
     def load(cls) -> "Settings":
