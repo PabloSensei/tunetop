@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The widget blinked on every track change. Players drop their media session for
+  a few dozen milliseconds between tracks, which was published as a "nothing is
+  playing" state — long enough for "hide the widget when nothing is playing" to
+  hide and immediately reshow the window. A session is now only given up on after
+  it has stayed gone for 1.5 s, and the idle hide waits a further 2 s and
+  re-checks before acting.
 - The startup update check silently did nothing once it had run earlier the same
   day, so launching an outdated build often reported nothing until the check was
   triggered by hand from Settings → About. The date was also stamped *before* the

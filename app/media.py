@@ -27,6 +27,11 @@ from winsdk.windows.storage.streams import DataReader
 # cover. Keep re-reading for a few polls until the artwork catches up.
 ART_SETTLE_POLLS = 5
 
+# Players drop their session for a few dozen milliseconds between tracks. Taking
+# that at face value publishes a "nothing is playing" state that makes the widget
+# blink, so a session is only given up on once it has stayed gone this long.
+SESSION_GRACE = 1.5
+
 # GlobalSystemMediaTransportControlsSessionPlaybackStatus
 STATUS_NAMES = {
     0: "closed",
@@ -175,6 +180,7 @@ class MediaController(QObject):
         self._manager = None
         self._session = None
         self._session_key = ""
+        self._session_seen = 0.0
         self._events_session = None
         self._tokens: list[tuple[str, object]] = []
         self._mgr_tokens: list[tuple[str, object]] = []
@@ -326,6 +332,12 @@ class MediaController(QObject):
             key = session.source_app_user_model_id if session is not None else ""
         except Exception:
             session, key = None, ""
+
+        if session is not None:
+            self._session_seen = time.monotonic()
+        elif self._session_key and time.monotonic() - self._session_seen < SESSION_GRACE:
+            return  # momentary gap between tracks; keep showing what we had
+
         self._session = session  # always keep the newest wrapper
         if key != self._session_key:
             self._detach_session()

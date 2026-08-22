@@ -29,6 +29,10 @@ from .updates import (
 
 IPC_KEY = "Tunetop.singleton"
 
+# Grace period before "hide when nothing is playing" acts, so a brief gap in the
+# media session between tracks cannot make the widget blink.
+IDLE_HIDE_DELAY_MS = 2000
+
 
 def another_instance_notified() -> bool:
     """True if an instance is already running (and was asked to show itself)."""
@@ -53,6 +57,10 @@ class MusicControlApp:
         # Set when the user asks for the widget explicitly; suppresses the
         # "hide when nothing is playing" rule until a track shows up.
         self._forced_visible = False
+        self._idle_hide = QTimer()
+        self._idle_hide.setSingleShot(True)
+        self._idle_hide.setInterval(IDLE_HIDE_DELAY_MS)
+        self._idle_hide.timeout.connect(self._hide_if_still_idle)
 
         self.controller = MediaController(self.settings.source_mode, self.settings.pinned_source)
         self.widget = PlayerWidget(self.settings)
@@ -286,10 +294,25 @@ class MusicControlApp:
         if self.settings.hide_when_no_music:
             if state.has_track:
                 self._forced_visible = False
+                self._idle_hide.stop()
                 if not self.widget.isVisible():
                     self.widget.show()
             elif self.widget.isVisible() and not self._forced_visible:
-                self.widget.hide()
+                if not self._idle_hide.isActive():
+                    self._idle_hide.start()  # confirmed by _hide_if_still_idle
+            else:
+                self._idle_hide.stop()
+        else:
+            self._idle_hide.stop()
+
+    def _hide_if_still_idle(self) -> None:
+        """Hide only if nothing turned up while the grace period ran."""
+        if not self.settings.hide_when_no_music or self._forced_visible:
+            return
+        if self.controller.state.has_track or not self.widget.isVisible():
+            return
+        self.widget.hide()
+        self._refresh_menu()
 
     def _on_failure(self, message: str) -> None:
         QMessageBox.critical(None, "Tunetop", tr("error.smtc", error=message))
