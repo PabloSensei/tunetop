@@ -39,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- An autostart entry left pointing at an exe that was moved or deleted is
+  repointed at the running exe on the next start, and uninstalling now removes
+  the autostart entry instead of leaving Windows to look for a missing file at
+  every logon.
 - With "hide the widget when nothing is playing" on, hiding the widget by hand
   while music played was undone by the next poll a second later. Only a hide the
   idle rule made itself is now undone when a track appears.

@@ -264,6 +264,21 @@ def test_playback_modes() -> None:
               and QRectF(0, 0, 24, 24).contains(path.boundingRect()), path and path.boundingRect())
 
 
+def test_autostart_command() -> None:
+    from app.system import command_target
+
+    cases = [
+        (r'"C:\Users\me\Tunetop\Tunetop.exe"', r"C:\Users\me\Tunetop\Tunetop.exe"),
+        (r'"C:\Py\pythonw.exe" "C:\src\main.py"', r"C:\Py\pythonw.exe"),
+        (r"C:\Tools\Tunetop.exe --tray", r"C:\Tools\Tunetop.exe"),
+        ('  "C:\\unterminated', "C:\\unterminated"),
+        ("", ""),
+    ]
+    for command, expected in cases:
+        check(f"autostart target {command!r}", command_target(command) == expected,
+              command_target(command))
+
+
 def test_app_icon() -> None:
     for size in (16, 32, 256):
         image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
@@ -350,6 +365,7 @@ def main() -> int:
     test_audio_matching()
     test_ambient_colors()
     test_playback_modes()
+    test_autostart_command()
     test_sources()
     test_locales()
     print()

@@ -599,6 +599,7 @@ def run() -> int:
     # Before anything reads or creates the config folder.
     migrate_legacy_config()
     system.migrate_legacy_autostart()
+    system.repair_autostart()
 
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeMenuBar, True)
     app = QApplication(sys.argv)
