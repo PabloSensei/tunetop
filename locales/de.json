@@ -4,6 +4,7 @@
   "widget.no_player": "Kein aktiver Player",
   "widget.start_music": "Musik starten",
   "widget.no_track_data": "keine Titelinfo",
+  "widget.volume": "Lautstärke {percent} %",
 
   "menu.show_widget": "Widget anzeigen",
   "menu.hide_widget": "Widget ausblenden",
@@ -52,7 +53,10 @@
   "settings.show_art": "Albumcover anzeigen",
   "settings.show_progress": "Fortschritt anzeigen (Klick zum Spulen)",
   "settings.scroll_titles": "Lange Titel laufen lassen",
-  "settings.wheel_volume": "Mausrad über dem Widget ändert die Systemlautstärke",
+  "settings.wheel_volume": "Mausrad über dem Widget ändert die Lautstärke",
+  "settings.volume_target": "Mausrad und Lautstärke-Tasten ändern:",
+  "settings.volume_app": "die Lautstärke des Players",
+  "settings.volume_system": "die Systemlautstärke",
 
   "settings.group.startup": "Start",
   "settings.autostart": "Mit Windows starten",
@@ -113,7 +117,7 @@
   "about.drag": "freie Fläche ziehen — Widget verschieben",
   "about.double_click": "Doppelklick — Kompaktmodus",
   "about.middle_click": "mittlere Taste — Wiedergabe/Pause",
-  "about.wheel": "Mausrad — Systemlautstärke",
+  "about.wheel": "Mausrad — Lautstärke",
   "about.right_click": "rechte Taste — Menü",
   "about.files": "Dateien:",
   "about.files_text": "Einstellungen, Skins und Übersetzungen liegen in",

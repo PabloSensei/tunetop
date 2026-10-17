@@ -4,6 +4,7 @@
   "widget.no_player": "没有正在播放的播放器",
   "widget.start_music": "播放点音乐吧",
   "widget.no_track_data": "没有曲目信息",
+  "widget.volume": "音量 {percent}%",
 
   "menu.show_widget": "显示小部件",
   "menu.hide_widget": "隐藏小部件",
@@ -52,7 +53,10 @@
   "settings.show_art": "显示专辑封面",
   "settings.show_progress": "显示播放进度（点击可跳转）",
   "settings.scroll_titles": "滚动显示过长的标题",
-  "settings.wheel_volume": "在小部件上滚动滚轮调节系统音量",
+  "settings.wheel_volume": "在小部件上滚动滚轮调节音量",
+  "settings.volume_target": "滚轮和音量快捷键调节：",
+  "settings.volume_app": "播放器自身的音量",
+  "settings.volume_system": "系统音量",
 
   "settings.group.startup": "启动",
   "settings.autostart": "开机时随 Windows 启动",
@@ -113,7 +117,7 @@
   "about.drag": "拖动空白处 — 移动小部件",
   "about.double_click": "双击 — 紧凑模式",
   "about.middle_click": "中键 — 播放/暂停",
-  "about.wheel": "滚轮 — 系统音量",
+  "about.wheel": "滚轮 — 音量",
   "about.right_click": "右键 — 菜单",
   "about.files": "文件：",
   "about.files_text": "设置、皮肤和翻译存放在",

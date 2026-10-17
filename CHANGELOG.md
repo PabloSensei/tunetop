@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   release, installs it silently and restarts Tunetop. An "Install updates
   automatically" option skips the question. The portable exe, which can't
   replace itself, keeps opening the download page.
+- The mouse wheel and the volume hotkeys change the playing app's own volume
+  (through the Windows audio mixer) instead of the whole system's, and the
+  widget shows the new level for a moment. Settings → General can switch back to
+  the system volume; it is also used whenever the player has no audio session
+  Tunetop can find.
 
 ### Changed
 

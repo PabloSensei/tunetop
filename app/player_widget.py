@@ -72,6 +72,8 @@ class PlayerWidget(QWidget):
         self._artist_rect = QRectF()
         self._time_rect = QRectF()
         self._title_overflows = False
+        self._osd_text = ""  # short-lived notice (volume level) shown in place of the time
+        self._osd_until = 0.0
         self._flags: Qt.WindowType | None = None
 
         self.setWindowTitle("Tunetop")
@@ -122,6 +124,14 @@ class PlayerWidget(QWidget):
         self.setFixedSize(QSize(width + margin * 2, height + margin * 2))
         self._relayout()
         self.update()
+
+    def show_osd(self, text: str, seconds: float = 1.2) -> None:
+        self._osd_text = text
+        self._osd_until = time.monotonic() + seconds
+        self.update()
+
+    def _osd(self) -> str:
+        return self._osd_text if time.monotonic() < self._osd_until else ""
 
     def set_compact(self, compact: bool) -> None:
         self.settings.compact = compact
@@ -356,6 +366,10 @@ class PlayerWidget(QWidget):
             title = tr("widget.no_player")
             artist = tr("widget.start_music")
 
+        osd = self._osd()
+        if osd and self._time_rect.isEmpty():
+            title = osd  # compact mode has no time slot; borrow the title's
+
         painter.setFont(self.skin.font("title"))
         self._draw_scrolling(painter, self._title_rect, title, self.skin.color("title"))
 
@@ -368,15 +382,19 @@ class PlayerWidget(QWidget):
             painter.drawText(self._artist_rect, int(Qt.AlignmentFlag.AlignLeft |
                                                     Qt.AlignmentFlag.AlignVCenter), elided)
 
-        if not self._time_rect.isEmpty() and state.duration > 0:
+        if self._time_rect.isEmpty():
+            return
+        if osd:
+            text = osd
+        elif state.duration > 0:
             position = self._seek_ratio * state.duration if self._seeking else state.live_position()
-            painter.setFont(self.skin.font("time"))
-            painter.setPen(self.skin.color("time"))
-            painter.drawText(
-                self._time_rect,
-                int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter),
-                f"{_fmt_time(position)} / {_fmt_time(state.duration)}",
-            )
+            text = f"{_fmt_time(position)} / {_fmt_time(state.duration)}"
+        else:
+            return
+        painter.setFont(self.skin.font("time"))
+        painter.setPen(self.skin.color("time"))
+        painter.drawText(self._time_rect,
+                         int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter), text)
 
     def _draw_scrolling(self, painter: QPainter, rect: QRectF, text: str, color: QColor) -> None:
         if rect.isEmpty():
@@ -614,6 +632,9 @@ class PlayerWidget(QWidget):
             self._scroll += 0.6
             needs_repaint = True
         if self.state.playing and self.state.duration > 0 and not self._progress_rect.isEmpty():
+            needs_repaint = True
+        if self._osd_text and not self._osd():
+            self._osd_text = ""  # expired: one last repaint to take it down
             needs_repaint = True
         if needs_repaint:
             self.update()

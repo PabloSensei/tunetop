@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QApplication, QMenu, QMessageBox, QProgressDialog, QSystemTrayIcon,
 )
 
-from . import __version__, icons, system
+from . import __version__, audio, icons, system
 from .config import Settings, migrate_legacy_config
 from .hotkeys import HotkeyManager
 from .i18n import set_language, tr
@@ -33,6 +33,7 @@ from .updates import (
 )
 
 IPC_KEY = "Tunetop.singleton"
+VOLUME_STEP = 0.05  # per wheel notch / hotkey press, when changing the player's own volume
 
 # Grace period before "hide when nothing is playing" acts, so a brief gap in the
 # media session between tracks cannot make the widget blink.
@@ -253,13 +254,26 @@ class MusicControlApp:
         if action == "toggle_widget":
             self.toggle_widget()
         elif action == "volume_up":
-            system.volume_up()
+            self._change_volume(+1)
         elif action == "volume_down":
-            system.volume_down()
+            self._change_volume(-1)
         elif action == "settings":
             self.show_settings()
         else:
             self.controller.command(action, value)
+
+    def _change_volume(self, direction: int) -> None:
+        """The playing app's own volume if possible, otherwise the system's."""
+        app_id = self.controller.state.app_id
+        if self.settings.volume_target == "app" and app_id:
+            level = audio.app_volume_step(app_id, direction * VOLUME_STEP)
+            if level is not None:
+                self.widget.show_osd(tr("widget.volume", percent=round(level * 100)))
+                return
+        if direction > 0:
+            system.volume_up()
+        else:
+            system.volume_down()
 
     def toggle_widget(self) -> None:
         if self.widget.isVisible():

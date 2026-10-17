@@ -4,6 +4,7 @@
   "widget.no_player": "再生中のプレーヤーがありません",
   "widget.start_music": "音楽を再生してください",
   "widget.no_track_data": "曲の情報がありません",
+  "widget.volume": "音量 {percent}%",
 
   "menu.show_widget": "ウィジェットを表示",
   "menu.hide_widget": "ウィジェットを隠す",
@@ -52,7 +53,10 @@
   "settings.show_art": "アルバムアートを表示",
   "settings.show_progress": "再生位置を表示（クリックでシーク）",
   "settings.scroll_titles": "長いタイトルをスクロール",
-  "settings.wheel_volume": "ウィジェット上のホイールでシステム音量を変更",
+  "settings.wheel_volume": "ウィジェット上のホイールで音量を変更",
+  "settings.volume_target": "ホイールと音量ホットキーで変更する対象:",
+  "settings.volume_app": "プレーヤー自体の音量",
+  "settings.volume_system": "システム音量",
 
   "settings.group.startup": "起動",
   "settings.autostart": "Windows と一緒に起動する",
@@ -113,7 +117,7 @@
   "about.drag": "空いている部分をドラッグ — ウィジェットを移動",
   "about.double_click": "ダブルクリック — コンパクトモード",
   "about.middle_click": "中ボタン — 再生/一時停止",
-  "about.wheel": "ホイール — システム音量",
+  "about.wheel": "ホイール — 音量",
   "about.right_click": "右ボタン — メニュー",
   "about.files": "ファイル:",
   "about.files_text": "設定・スキン・翻訳の保存先:",
