@@ -1,3 +1,3 @@
 """Tunetop — an always-on-top media control widget for Windows."""
 
-__version__ = "1.2.3"
+__version__ = "1.3.0"
