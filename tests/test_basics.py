@@ -247,6 +247,23 @@ def test_ambient_colors() -> None:
     check("null image gives nothing", ambient_colors(QImage(), dark=True) is None)
 
 
+def test_playback_modes() -> None:
+    from app import icons as icon_paths
+    from app.media import REPEAT_LIST, REPEAT_NONE, REPEAT_TRACK, PlayerState, next_repeat_mode
+
+    check("repeat cycles off -> list", next_repeat_mode(REPEAT_NONE) == REPEAT_LIST)
+    check("repeat cycles list -> track", next_repeat_mode(REPEAT_LIST) == REPEAT_TRACK)
+    check("repeat cycles track -> off", next_repeat_mode(REPEAT_TRACK) == REPEAT_NONE)
+    check("unknown repeat mode resets", next_repeat_mode(7) == REPEAT_NONE)
+    base = PlayerState(title="t", connected=True)
+    check("shuffle change repaints", base.identity() != PlayerState(
+        title="t", connected=True, shuffle=True).identity())
+    for name in ("shuffle", "repeat", "repeat_one"):
+        path = icon_paths.icon_path(name)
+        check(f"icon {name} drawn", path is not None and not path.isEmpty()
+              and QRectF(0, 0, 24, 24).contains(path.boundingRect()), path and path.boundingRect())
+
+
 def test_app_icon() -> None:
     for size in (16, 32, 256):
         image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
@@ -332,6 +349,7 @@ def main() -> int:
     test_updates()
     test_audio_matching()
     test_ambient_colors()
+    test_playback_modes()
     test_sources()
     test_locales()
     print()

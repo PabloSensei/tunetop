@@ -126,6 +126,70 @@ def _pin() -> QPainterPath:
     return path
 
 
+def _stroked(path: QPainterPath, width: float = 1.9) -> QPainterPath:
+    pen = QPen()
+    pen.setWidthF(width)
+    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+    from PySide6.QtGui import QPainterPathStroker
+
+    outline = QPainterPathStroker(pen).createStroke(path)
+    outline.setFillRule(Qt.FillRule.WindingFill)
+    return outline
+
+
+def _arrowhead(tip: QPointF, direction: float) -> QPainterPath:
+    """A small filled triangle pointing right (direction=1) or left (-1) at `tip`."""
+    path = QPainterPath()
+    path.moveTo(tip)
+    path.lineTo(tip.x() - 3.6 * direction, tip.y() - 2.9)
+    path.lineTo(tip.x() - 3.6 * direction, tip.y() + 2.9)
+    path.closeSubpath()
+    return path
+
+
+def _shuffle() -> QPainterPath:
+    lines = QPainterPath()
+    lines.moveTo(3.5, 7.0)
+    lines.lineTo(7.0, 7.0)
+    lines.lineTo(14.5, 17.0)
+    lines.lineTo(17.5, 17.0)
+    lines.moveTo(3.5, 17.0)
+    lines.lineTo(7.0, 17.0)
+    lines.lineTo(14.5, 7.0)
+    lines.lineTo(17.5, 7.0)
+    path = _stroked(lines)
+    path.addPath(_arrowhead(QPointF(20.5, 7.0), 1))
+    path.addPath(_arrowhead(QPointF(20.5, 17.0), 1))
+    return path
+
+
+def _repeat_loop() -> QPainterPath:
+    loop = QPainterPath()
+    loop.moveTo(4.5, 12.5)
+    loop.lineTo(4.5, 9.5)
+    loop.quadTo(4.5, 7.0, 7.0, 7.0)
+    loop.lineTo(16.5, 7.0)
+    loop.moveTo(19.5, 11.5)
+    loop.lineTo(19.5, 14.5)
+    loop.quadTo(19.5, 17.0, 17.0, 17.0)
+    loop.lineTo(7.5, 17.0)
+    path = _stroked(loop)
+    path.addPath(_arrowhead(QPointF(20.0, 7.0), 1))
+    path.addPath(_arrowhead(QPointF(4.0, 17.0), -1))
+    return path
+
+
+def _repeat() -> QPainterPath:
+    return _repeat_loop()
+
+
+def _repeat_one() -> QPainterPath:
+    path = _repeat_loop()
+    path.addRoundedRect(QRectF(11.2, 9.4, 1.8, 5.2), 0.8, 0.8)
+    return path
+
+
 _BUILDERS = {
     "play": _play,
     "pause": _pause,
@@ -137,6 +201,9 @@ _BUILDERS = {
     "close": _close,
     "note": _note,
     "pin": _pin,
+    "shuffle": _shuffle,
+    "repeat": _repeat,
+    "repeat_one": _repeat_one,
 }
 
 _CACHE: dict[str, QPainterPath] = {}

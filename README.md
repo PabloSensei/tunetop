@@ -24,7 +24,8 @@ plugins required.
 ## Features
 
 - **Always-on-top widget** — frameless, draggable, snaps to screen edges
-- **Transport buttons** — previous / play-pause / next, album art, title and artist
+- **Transport buttons** — previous / play-pause / next, shuffle and repeat (when the
+  player supports them), album art, title and artist
 - **Track progress** with click-to-seek (when the source publishes a timeline)
 - **Album-art colours** — optionally tint the widget with the current cover
 - **Skins** — a folder with a `skin.json`: colours, sizes, fonts, corner radius,
@@ -173,6 +174,7 @@ named in `extends`.
 - **`shadow`** is the shadow radius around the card in pixels, `0` turns it off.
 - **`background_image`** is drawn over the gradient; modes are `stretch` / `tile` / `center`.
 - **`icons`** are optional — without them buttons are drawn as vectors tinted with `icon`.
+  Keys: `play`, `pause`, `next`, `prev`, `shuffle`, `repeat`, `repeat_one`.
 - **Fonts** also accept `"italic": true` and `"letter_spacing": 0.4`.
 - The layout adapts to any `size`, so the widget can be made bigger or smaller.
 
