@@ -19,10 +19,12 @@ from PySide6.QtWidgets import QApplication, QWidget
 from . import icons
 from .config import Settings
 from .i18n import tr
+from .lyrics import line_at
 from .media import REPEAT_NONE, REPEAT_TRACK, PlayerState, friendly_source_name
 from .skins import Skin, load_skin
 
 SNAP_DISTANCE = 18
+LYRIC_LEAD = 0.3  # show a lyric line this much early; reading lags hearing
 MIN_TIME_WIDTH = 72  # room "12:34 / 56:78" needs beside the button row
 AMBIENT_FADE = 0.6  # seconds to blend the art-tinted background into the next track's
 
@@ -128,6 +130,9 @@ class PlayerWidget(QWidget):
         self._ambient: tuple[QColor, QColor, QColor] | None = None  # current target
         self._ambient_from: tuple[QColor, QColor, QColor] | None = None
         self._ambient_since = 0.0
+        self._lyrics_key: tuple | None = None
+        self._lyrics: list = []
+        self._lyric_index = -1
         self._osd_text = ""  # short-lived notice (volume level) shown in place of the time
         self._osd_until = 0.0
         self._flags: Qt.WindowType | None = None
@@ -181,6 +186,20 @@ class PlayerWidget(QWidget):
         self.setFixedSize(QSize(width + margin * 2, height + margin * 2))
         self._relayout()
         self.update()
+
+    def set_lyrics(self, key: tuple, lyrics: list) -> None:
+        self._lyrics_key = key
+        self._lyrics = list(lyrics or [])
+        self._lyric_index = -1
+        self.update()
+
+    def _current_lyric(self) -> tuple[int, str]:
+        state = self.state
+        if (not self.settings.show_lyrics or not self._lyrics or not state.has_track
+                or self._lyrics_key != (state.app_id, state.title, state.artist)):
+            return -1, ""
+        position = self._seek_ratio * state.duration if self._seeking else state.live_position()
+        return line_at(self._lyrics, position + LYRIC_LEAD)
 
     def show_osd(self, text: str, seconds: float = 1.2) -> None:
         self._osd_text = text
@@ -564,6 +583,11 @@ class PlayerWidget(QWidget):
         if not self._artist_rect.isEmpty():
             painter.setFont(self.skin.font("artist"))
             painter.setPen(self.skin.color("artist"))
+            index, lyric = self._current_lyric()
+            self._lyric_index = index
+            if lyric:
+                artist = lyric
+                painter.setPen(self.skin.color("title"))  # sung words stand out from the artist
             metrics = QFontMetricsF(painter.font())
             elided = metrics.elidedText(artist, Qt.TextElideMode.ElideRight,
                                         int(self._artist_rect.width()))
@@ -838,6 +862,8 @@ class PlayerWidget(QWidget):
             needs_repaint = True
         if self._ambient_fading():
             needs_repaint = True
+        if self.state.playing and self._current_lyric()[0] != self._lyric_index:
+            needs_repaint = True  # next line, even with the progress bar hidden
         if self._osd_text and not self._osd():
             self._osd_text = ""  # expired: one last repaint to take it down
             needs_repaint = True

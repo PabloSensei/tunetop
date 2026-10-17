@@ -36,6 +36,7 @@ plugins required.
 - **Per-player volume** — the wheel and volume hotkeys turn down just the player,
   not the whole system (switchable)
 - **Tray icon** with the current track in its tooltip and a full command menu
+- **Synced lyrics** — optionally, the current line from lrclib.net instead of the artist
 - **Track change notification** — an optional "now playing" card with the cover
 - **Source picker** — follow the current Windows player, or pin one specific app
 - **Compact mode** — a slim bar with just the buttons, and **cover only** — just the
@@ -205,6 +206,7 @@ with defaults.
 main.py                 entry point
 app/config.py           settings (dataclass + JSON)
 app/i18n.py             translation loading
+app/lyrics.py           synced lyrics from lrclib.net
 app/media.py            Windows SMTC bridge (asyncio on a worker thread)
 app/hotkeys.py          global hotkeys via RegisterHotKey
 app/skins.py            skin loading and merging

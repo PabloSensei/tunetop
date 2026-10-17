@@ -74,7 +74,7 @@ is deliberately forgiving: unknown keys are dropped, corrupt files fall back to 
 hotkeys added by newer versions are merged in. The settings dialog applies changes live and
 saves immediately — no OK/Cancel — and tells `application.py` what changed via
 `applied(hint)` where hint is one of `language` / `window` / `skin` / `layout` / `source` /
-`visibility` / `hotkeys_preview` / `refresh`. `language` forces a full rebuild of the dialog
+`visibility` / `lyrics` / `hotkeys_preview` / `refresh`. `language` forces a full rebuild of the dialog
 since Qt widgets don't re-translate in place.
 
 Hotkeys ([app/hotkeys.py](app/hotkeys.py)) use Win32 `RegisterHotKey` against a hidden sink

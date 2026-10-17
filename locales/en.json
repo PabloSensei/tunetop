@@ -59,6 +59,8 @@
   "settings.show_progress": "Show track progress (click to seek)",
   "settings.show_mode_buttons": "Show shuffle and repeat buttons (if the player supports them)",
   "settings.scroll_titles": "Scroll long titles",
+  "settings.show_lyrics": "Show synced lyrics in place of the artist",
+  "settings.lyrics_hint": "Lyrics come from lrclib.net: the track title, artist and length are sent there to look them up.",
   "settings.track_toast": "Track change notification:",
   "settings.track_toast_off": "off",
   "settings.track_toast_hidden": "when the widget is hidden",

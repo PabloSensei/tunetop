@@ -59,6 +59,8 @@
   "settings.show_progress": "Pokazuj postęp utworu (kliknięcie — przewijanie)",
   "settings.show_mode_buttons": "Pokazuj przyciski losowania i powtarzania (jeśli odtwarzacz je obsługuje)",
   "settings.scroll_titles": "Przewijaj długie tytuły",
+  "settings.show_lyrics": "Pokazuj zsynchronizowany tekst zamiast wykonawcy",
+  "settings.lyrics_hint": "Teksty pochodzą z lrclib.net: do wyszukania wysyłane są tytuł, wykonawca i długość utworu.",
   "settings.track_toast": "Powiadomienie o zmianie utworu:",
   "settings.track_toast_off": "wyłączone",
   "settings.track_toast_hidden": "gdy widżet jest ukryty",

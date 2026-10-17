@@ -121,6 +121,7 @@ class Settings:
     show_progress: bool = True
     show_mode_buttons: bool = True  # shuffle/repeat, when the player supports them
     scroll_long_titles: bool = True
+    show_lyrics: bool = False  # synced lyrics from lrclib.net in place of the artist line
     track_toast: str = "off"  # "off" | "hidden" (only while the widget is hidden) | "always"
 
     # window behaviour

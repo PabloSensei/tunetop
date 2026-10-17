@@ -59,6 +59,8 @@
   "settings.show_progress": "Показувати прогрес треку (клік — перемотування)",
   "settings.show_mode_buttons": "Показувати кнопки «перемішати» та «повтор» (якщо плеєр їх підтримує)",
   "settings.scroll_titles": "Прокручувати довгі назви",
+  "settings.show_lyrics": "Показувати синхронний текст пісні замість виконавця",
+  "settings.lyrics_hint": "Тексти беруться з lrclib.net: для пошуку туди надсилаються назва треку, виконавець і тривалість.",
   "settings.track_toast": "Сповіщення про зміну треку:",
   "settings.track_toast_off": "вимкнено",
   "settings.track_toast_hidden": "коли віджет приховано",

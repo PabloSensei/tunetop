@@ -59,6 +59,8 @@
   "settings.show_progress": "재생 진행 표시 (클릭하여 이동)",
   "settings.show_mode_buttons": "셔플 및 반복 버튼 표시 (플레이어가 지원하는 경우)",
   "settings.scroll_titles": "긴 제목 흐르게 표시",
+  "settings.show_lyrics": "아티스트 대신 싱크 가사 표시",
+  "settings.lyrics_hint": "가사는 lrclib.net에서 가져옵니다. 검색을 위해 곡 제목, 아티스트, 길이가 전송됩니다.",
   "settings.track_toast": "곡 변경 알림:",
   "settings.track_toast_off": "끄기",
   "settings.track_toast_hidden": "위젯이 숨겨져 있을 때",

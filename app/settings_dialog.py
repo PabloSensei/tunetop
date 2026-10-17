@@ -218,6 +218,12 @@ class SettingsDialog(QDialog):
                        self.cb_scroll, self.cb_wheel):
             content_form.addWidget(widget)
 
+        self.cb_lyrics = QCheckBox(tr("settings.show_lyrics"))
+        self.cb_lyrics.setChecked(self.settings.show_lyrics)
+        self.cb_lyrics.toggled.connect(lambda v: self._set("show_lyrics", v, "lyrics"))
+        content_form.addWidget(self.cb_lyrics)
+        content_form.addWidget(hint_label(tr("settings.lyrics_hint")))
+
         toast_row = QHBoxLayout()
         toast_row.addWidget(QLabel(tr("settings.track_toast")))
         self.cmb_toast = QComboBox()

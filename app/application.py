@@ -19,6 +19,7 @@ from .media import MediaController, PlayerState, friendly_source_name
 from .player_widget import PlayerWidget
 from .settings_dialog import SettingsDialog
 from .skins import available_skins, load_skin
+from .lyrics import LyricsFetcher
 from .toast import TrackToast
 from .updates import (
     RELEASES_PAGE_URL,
@@ -79,6 +80,9 @@ class MusicControlApp:
         self.widget = PlayerWidget(self.settings)
         self.hotkeys = HotkeyManager(app)
         self.tray = QSystemTrayIcon()
+        self.lyrics = LyricsFetcher()
+        self.lyrics.ready.connect(self.widget.set_lyrics)
+        self._lyrics_track: tuple | None = None
         self.toast = TrackToast()
         self.toast.clicked.connect(self.show_widget)
         self._toast_track: tuple | None = None
@@ -350,6 +354,7 @@ class MusicControlApp:
     def _on_state(self, state: PlayerState) -> None:
         self.widget.set_state(state)
         self._maybe_toast(state)
+        self._request_lyrics(state)
         if state.has_track:
             source = friendly_source_name(state.app_id)
             mark = "▶" if state.playing else "❚❚"
@@ -376,6 +381,15 @@ class MusicControlApp:
                 self._idle_hide.stop()
         else:
             self._idle_hide.stop()
+
+    def _request_lyrics(self, state: PlayerState) -> None:
+        if not self.settings.show_lyrics or not state.has_track:
+            return
+        track = (state.app_id, state.title, state.artist)
+        if track == self._lyrics_track:
+            return
+        self._lyrics_track = track
+        self.lyrics.request(track, state.artist, state.title, state.duration)
 
     def _maybe_toast(self, state: PlayerState) -> None:
         track = (state.app_id, state.title, state.artist) if state.has_track else None
@@ -548,6 +562,9 @@ class MusicControlApp:
             self.widget.apply_skin(self.settings.skin)
         elif hint == "source":
             self.controller.set_source(self.settings.source_mode, self.settings.pinned_source)
+        elif hint == "lyrics":
+            self._lyrics_track = None
+            self._request_lyrics(self.controller.state)
         elif hint == "visibility":
             if not self.settings.hide_when_no_music and self._auto_hidden:
                 self._auto_hidden = False

@@ -59,6 +59,8 @@
   "settings.show_progress": "Parça ilerlemesini göster (tıklayarak ileri sar)",
   "settings.show_mode_buttons": "Karıştır ve tekrarla düğmelerini göster (oynatıcı destekliyorsa)",
   "settings.scroll_titles": "Uzun başlıkları kaydır",
+  "settings.show_lyrics": "Sanatçı yerine eşzamanlı şarkı sözlerini göster",
+  "settings.lyrics_hint": "Sözler lrclib.net'ten gelir: aramak için parça adı, sanatçı ve süre oraya gönderilir.",
   "settings.track_toast": "Parça değişikliği bildirimi:",
   "settings.track_toast_off": "kapalı",
   "settings.track_toast_hidden": "bileşen gizliyken",
