@@ -51,6 +51,7 @@
 
   "settings.group.content": "ウィジェットの表示内容",
   "settings.show_art": "アルバムアートを表示",
+  "settings.art_background": "背景をアルバムアートの色で染める",
   "settings.show_progress": "再生位置を表示（クリックでシーク）",
   "settings.scroll_titles": "長いタイトルをスクロール",
   "settings.wheel_volume": "ウィジェット上のホイールで音量を変更",

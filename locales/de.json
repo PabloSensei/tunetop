@@ -51,6 +51,7 @@
 
   "settings.group.content": "Widget-Inhalt",
   "settings.show_art": "Albumcover anzeigen",
+  "settings.art_background": "Hintergrund in den Farben des Albumcovers tönen",
   "settings.show_progress": "Fortschritt anzeigen (Klick zum Spulen)",
   "settings.scroll_titles": "Lange Titel laufen lassen",
   "settings.wheel_volume": "Mausrad über dem Widget ändert die Lautstärke",

@@ -26,6 +26,7 @@ plugins required.
 - **Always-on-top widget** — frameless, draggable, snaps to screen edges
 - **Transport buttons** — previous / play-pause / next, album art, title and artist
 - **Track progress** with click-to-seek (when the source publishes a timeline)
+- **Album-art colours** — optionally tint the widget with the current cover
 - **Skins** — a folder with a `skin.json`: colours, sizes, fonts, corner radius,
   background image, custom icons. Dark, Light, Neon, Glass, Minimal Dark and
   Minimal Light are bundled

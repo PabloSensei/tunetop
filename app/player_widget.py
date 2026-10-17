@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 from PySide6.QtCore import QPoint, QPointF, QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import (
-    QBrush, QColor, QFontMetricsF, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap,
+    QBrush, QColor, QFontMetricsF, QImage, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap,
 )
 from PySide6.QtWidgets import QApplication, QWidget
 
@@ -23,6 +23,57 @@ from .media import PlayerState, friendly_source_name
 from .skins import Skin, load_skin
 
 SNAP_DISTANCE = 18
+AMBIENT_FADE = 0.6  # seconds to blend the art-tinted background into the next track's
+
+
+def ambient_colors(image: QImage, dark: bool) -> tuple[QColor, QColor, QColor] | None:
+    """(top, bottom, accent) colours for a card tinted by `image`.
+
+    Top and bottom are the averages of the image's upper and lower halves, pushed
+    dark (or light, for light skins) and muted enough to keep text readable; the
+    accent is the image's most vivid colour, for the progress bar.
+    """
+    if image.isNull():
+        return None
+    small = image.convertToFormat(QImage.Format.Format_RGB32).scaled(
+        12, 12, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+    halves = [[0, 0, 0, 0], [0, 0, 0, 0]]
+    vivid, vivid_score = QColor(), -1.0
+    for y in range(small.height()):
+        half = halves[0 if y < small.height() / 2 else 1]
+        for x in range(small.width()):
+            color = small.pixelColor(x, y)
+            half[0] += color.red()
+            half[1] += color.green()
+            half[2] += color.blue()
+            half[3] += 1
+            score = color.hsvSaturationF() * color.valueF()
+            if score > vivid_score:
+                vivid, vivid_score = color, score
+
+    def tone(color: QColor, value: float, saturation: float) -> QColor:
+        hue, sat, _, _ = color.getHsvF()
+        return QColor.fromHsvF(max(hue, 0.0), min(sat, saturation), value)
+
+    top, bottom = (QColor(r // n, g // n, b // n) for r, g, b, n in halves)
+    if dark:
+        top, bottom = tone(top, 0.34, 0.65), tone(bottom, 0.2, 0.65)
+        accent = tone(vivid, 0.95, 0.75)
+    else:
+        top, bottom = tone(top, 0.97, 0.18), tone(bottom, 0.9, 0.22)
+        accent = tone(vivid, 0.7, 0.8)
+    if vivid_score < 0.08:  # a greyscale cover has no colour worth borrowing
+        accent = QColor()
+    return top, bottom, accent
+
+
+def _mix(a: QColor, b: QColor, t: float) -> QColor:
+    return QColor.fromRgbF(
+        a.redF() + (b.redF() - a.redF()) * t,
+        a.greenF() + (b.greenF() - a.greenF()) * t,
+        a.blueF() + (b.blueF() - a.blueF()) * t,
+        a.alphaF() + (b.alphaF() - a.alphaF()) * t,
+    )
 
 
 @dataclass
@@ -72,6 +123,10 @@ class PlayerWidget(QWidget):
         self._artist_rect = QRectF()
         self._time_rect = QRectF()
         self._title_overflows = False
+        self._progress_color = QColor()
+        self._ambient: tuple[QColor, QColor, QColor] | None = None  # current target
+        self._ambient_from: tuple[QColor, QColor, QColor] | None = None
+        self._ambient_since = 0.0
         self._osd_text = ""  # short-lived notice (volume level) shown in place of the time
         self._osd_until = 0.0
         self._flags: Qt.WindowType | None = None
@@ -119,6 +174,7 @@ class PlayerWidget(QWidget):
         self._bg_pixmap = self.skin.background_pixmap()
         self._art_key = ""
         self._art_pixmap = None
+        self._set_ambient(None, fade=False)
         width, height = self.skin.size(self.settings.compact)
         margin = self.skin.metric("shadow")
         self.setFixedSize(QSize(width + margin * 2, height + margin * 2))
@@ -248,6 +304,7 @@ class PlayerWidget(QWidget):
                 pixmap = QPixmap()
                 if pixmap.loadFromData(state.art):
                     self._art_pixmap = pixmap
+            self._set_ambient(self._art_pixmap)
         if changed:
             self._scroll = 0.0
             self._scroll_hold = time.monotonic() + 1.2
@@ -256,6 +313,40 @@ class PlayerWidget(QWidget):
             tip = " — ".join(p for p in (state.artist, state.title) if p) or tr("widget.no_player")
             self.setToolTip(f"{tip}\n{source}" if source else tip)
         self.update()
+
+    # -------------------------------------------------------------- ambient
+
+    def _set_ambient(self, pixmap: QPixmap | None, fade: bool = True) -> None:
+        colors = None
+        if pixmap is not None and not pixmap.isNull():
+            colors = ambient_colors(pixmap.toImage(), self.skin.color("bg").lightness() < 128)
+        self._ambient_from = self._ambient_now() if fade else None
+        self._ambient = colors
+        self._ambient_since = time.monotonic()
+
+    def _skin_colors(self) -> tuple[QColor, QColor, QColor]:
+        return self.skin.color("bg"), self.skin.color("bg2"), self.skin.color("progress_fg")
+
+    def _ambient_now(self) -> tuple[QColor, QColor, QColor]:
+        """Background top/bottom and progress colours as they should be painted now."""
+        skin = self._skin_colors()
+        target = self._ambient if self.settings.art_background and self._ambient else skin
+        # keep the skin's own translucency (Glass) and its accent when the art has none
+        target = tuple(
+            QColor(color.red(), color.green(), color.blue(), base.alpha())
+            if color.isValid() else base
+            for color, base in zip(target, skin)
+        )
+        start = self._ambient_from
+        t = (time.monotonic() - self._ambient_since) / AMBIENT_FADE
+        if start is None or t >= 1.0:
+            return target  # type: ignore[return-value]
+        t = t * t * (3 - 2 * t)  # smoothstep
+        return tuple(_mix(a, b, t) for a, b in zip(start, target))  # type: ignore[return-value]
+
+    def _ambient_fading(self) -> bool:
+        return (self._ambient_from is not None
+                and time.monotonic() - self._ambient_since < AMBIENT_FADE)
 
     # ---------------------------------------------------------------- paint
 
@@ -273,9 +364,10 @@ class PlayerWidget(QWidget):
         # background
         painter.save()
         painter.setClipPath(card_path)
+        top, bottom, self._progress_color = self._ambient_now()
         gradient = QLinearGradient(self._card.topLeft(), self._card.bottomLeft())
-        gradient.setColorAt(0.0, self.skin.color("bg"))
-        gradient.setColorAt(1.0, self.skin.color("bg2"))
+        gradient.setColorAt(0.0, top)
+        gradient.setColorAt(1.0, bottom)
         painter.fillPath(card_path, QBrush(gradient))
         if self._bg_pixmap is not None:
             mode = self.skin.data.get("background_image_mode", "stretch")
@@ -428,10 +520,10 @@ class PlayerWidget(QWidget):
         ratio = max(0.0, min(1.0, ratio))
         filled = QRectF(self._progress_rect)
         filled.setWidth(self._progress_rect.width() * ratio)
-        painter.setBrush(self.skin.color("progress_fg"))
+        painter.setBrush(self._progress_color)
         painter.drawRoundedRect(filled, radius, radius)
         if self._hovered and state.can_seek:
-            painter.setBrush(self.skin.color("progress_fg"))
+            painter.setBrush(self._progress_color)
             knob = radius + 2.5
             painter.drawEllipse(QPointF(filled.right(), filled.center().y()), knob, knob)
 
@@ -632,6 +724,8 @@ class PlayerWidget(QWidget):
             self._scroll += 0.6
             needs_repaint = True
         if self.state.playing and self.state.duration > 0 and not self._progress_rect.isEmpty():
+            needs_repaint = True
+        if self._ambient_fading():
             needs_repaint = True
         if self._osd_text and not self._osd():
             self._osd_text = ""  # expired: one last repaint to take it down

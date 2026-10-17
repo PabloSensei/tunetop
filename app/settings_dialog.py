@@ -195,6 +195,9 @@ class SettingsDialog(QDialog):
         self.cb_art = QCheckBox(tr("settings.show_art"))
         self.cb_art.setChecked(self.settings.show_album_art)
         self.cb_art.toggled.connect(lambda v: self._set("show_album_art", v, "layout"))
+        self.cb_art_bg = QCheckBox(tr("settings.art_background"))
+        self.cb_art_bg.setChecked(self.settings.art_background)
+        self.cb_art_bg.toggled.connect(lambda v: self._set("art_background", v, ""))
         self.cb_progress = QCheckBox(tr("settings.show_progress"))
         self.cb_progress.setChecked(self.settings.show_progress)
         self.cb_progress.toggled.connect(lambda v: self._set("show_progress", v, "layout"))
@@ -204,7 +207,8 @@ class SettingsDialog(QDialog):
         self.cb_wheel = QCheckBox(tr("settings.wheel_volume"))
         self.cb_wheel.setChecked(self.settings.wheel_volume)
         self.cb_wheel.toggled.connect(lambda v: self._set("wheel_volume", v, ""))
-        for widget in (self.cb_art, self.cb_progress, self.cb_scroll, self.cb_wheel):
+        for widget in (self.cb_art, self.cb_art_bg, self.cb_progress, self.cb_scroll,
+                       self.cb_wheel):
             content_form.addWidget(widget)
 
         volume_row = QHBoxLayout()

@@ -51,6 +51,7 @@
 
   "settings.group.content": "Zawartość widżetu",
   "settings.show_art": "Pokazuj okładkę",
+  "settings.art_background": "Barw tło kolorami okładki",
   "settings.show_progress": "Pokazuj postęp utworu (kliknięcie — przewijanie)",
   "settings.scroll_titles": "Przewijaj długie tytuły",
   "settings.wheel_volume": "Kółko myszy nad widżetem zmienia głośność",

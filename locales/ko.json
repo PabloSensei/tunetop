@@ -51,6 +51,7 @@
 
   "settings.group.content": "위젯 표시 내용",
   "settings.show_art": "앨범 아트 표시",
+  "settings.art_background": "앨범 아트 색으로 배경 물들이기",
   "settings.show_progress": "재생 진행 표시 (클릭하여 이동)",
   "settings.scroll_titles": "긴 제목 흐르게 표시",
   "settings.wheel_volume": "위젯 위에서 휠로 볼륨 조절",

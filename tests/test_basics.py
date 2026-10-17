@@ -226,6 +226,27 @@ def test_audio_matching() -> None:
               process_matches(app_id, exe) is expected)
 
 
+def test_ambient_colors() -> None:
+    from app.player_widget import ambient_colors
+
+    image = QImage(40, 40, QImage.Format.Format_RGB32)
+    image.fill(QColor("#ff3030"))
+    for y in range(20, 40):
+        for x in range(40):
+            image.setPixelColor(x, y, QColor("#2040ff"))
+    top, bottom, accent = ambient_colors(image, dark=True)
+    check("ambient top keeps the red hue", top.red() > top.blue(), top.name())
+    check("ambient bottom keeps the blue hue", bottom.blue() > bottom.red(), bottom.name())
+    check("ambient is dark on dark skins", top.valueF() < 0.4 and bottom.valueF() < 0.4)
+    check("ambient accent is vivid", accent.isValid() and accent.hsvSaturationF() > 0.5)
+    top, _, _ = ambient_colors(image, dark=False)
+    check("ambient is light on light skins", top.valueF() > 0.9, top.name())
+    grey = QImage(8, 8, QImage.Format.Format_RGB32)
+    grey.fill(QColor("#808080"))
+    check("greyscale art has no accent", not ambient_colors(grey, dark=True)[2].isValid())
+    check("null image gives nothing", ambient_colors(QImage(), dark=True) is None)
+
+
 def test_app_icon() -> None:
     for size in (16, 32, 256):
         image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
@@ -310,6 +331,7 @@ def main() -> int:
     test_app_icon()
     test_updates()
     test_audio_matching()
+    test_ambient_colors()
     test_sources()
     test_locales()
     print()
