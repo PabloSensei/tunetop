@@ -120,6 +120,7 @@ class Settings:
     show_progress: bool = True
     show_mode_buttons: bool = True  # shuffle/repeat, when the player supports them
     scroll_long_titles: bool = True
+    track_toast: str = "off"  # "off" | "hidden" (only while the widget is hidden) | "always"
 
     # window behaviour
     always_on_top: bool = True

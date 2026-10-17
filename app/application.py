@@ -19,6 +19,7 @@ from .media import MediaController, PlayerState, friendly_source_name
 from .player_widget import PlayerWidget
 from .settings_dialog import SettingsDialog
 from .skins import available_skins, load_skin
+from .toast import TrackToast
 from .updates import (
     RELEASES_PAGE_URL,
     ReleaseInfo,
@@ -78,6 +79,10 @@ class MusicControlApp:
         self.widget = PlayerWidget(self.settings)
         self.hotkeys = HotkeyManager(app)
         self.tray = QSystemTrayIcon()
+        self.toast = TrackToast()
+        self.toast.clicked.connect(self.show_widget)
+        self._toast_track: tuple | None = None
+        self._toast_primed = False  # the track playing at startup is not news
 
         self._server = QLocalServer()
         QLocalServer.removeServer(IPC_KEY)
@@ -334,6 +339,7 @@ class MusicControlApp:
 
     def _on_state(self, state: PlayerState) -> None:
         self.widget.set_state(state)
+        self._maybe_toast(state)
         if state.has_track:
             source = friendly_source_name(state.app_id)
             mark = "▶" if state.playing else "❚❚"
@@ -360,6 +366,22 @@ class MusicControlApp:
                 self._idle_hide.stop()
         else:
             self._idle_hide.stop()
+
+    def _maybe_toast(self, state: PlayerState) -> None:
+        track = (state.app_id, state.title, state.artist) if state.has_track else None
+        if track == self._toast_track:
+            if track is not None and self.toast.isVisible():
+                self.toast.update_state(state)  # the cover often lands a poll or two later
+            return
+        self._toast_track = track
+        primed, self._toast_primed = self._toast_primed, True
+        if track is None or not primed:
+            return
+        mode = self.settings.track_toast
+        widget_visible = self.widget.isVisible()
+        if mode == "always" or (mode == "hidden" and not widget_visible):
+            anchor = self.widget.frameGeometry() if widget_visible else None
+            self.toast.popup(state, self.widget.skin, anchor)
 
     def _hide_if_still_idle(self) -> None:
         """Hide only if nothing turned up while the grace period ran."""

@@ -214,6 +214,18 @@ class SettingsDialog(QDialog):
                        self.cb_scroll, self.cb_wheel):
             content_form.addWidget(widget)
 
+        toast_row = QHBoxLayout()
+        toast_row.addWidget(QLabel(tr("settings.track_toast")))
+        self.cmb_toast = QComboBox()
+        self.cmb_toast.addItem(tr("settings.track_toast_off"), "off")
+        self.cmb_toast.addItem(tr("settings.track_toast_hidden"), "hidden")
+        self.cmb_toast.addItem(tr("settings.track_toast_always"), "always")
+        self.cmb_toast.setCurrentIndex(max(0, self.cmb_toast.findData(self.settings.track_toast)))
+        self.cmb_toast.currentIndexChanged.connect(
+            lambda i: self._set("track_toast", self.cmb_toast.itemData(i) or "off", ""))
+        toast_row.addWidget(self.cmb_toast, 1)
+        content_form.addLayout(toast_row)
+
         volume_row = QHBoxLayout()
         volume_row.addWidget(QLabel(tr("settings.volume_target")))
         self.cmb_volume = QComboBox()
