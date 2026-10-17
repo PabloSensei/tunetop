@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   menu) for players that expose them through Windows; repeat cycles off → all →
   one track. They stay hidden for players that don't support them. A "like"
   button isn't possible: Windows' media controls have no such command.
+- Track change notifications: a small "now playing" card with the cover, styled
+  by the active skin, appears for four seconds when the track changes — off by
+  default, or only while the widget is hidden, or always (then next to the
+  widget). Clicking it brings the widget up.
 
 ### Changed
 

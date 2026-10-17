@@ -36,6 +36,7 @@ plugins required.
 - **Per-player volume** — the wheel and volume hotkeys turn down just the player,
   not the whole system (switchable)
 - **Tray icon** with the current track in its tooltip and a full command menu
+- **Track change notification** — an optional "now playing" card with the cover
 - **Source picker** — follow the current Windows player, or pin one specific app
 - **Compact mode** — a slim bar with just the buttons (double-click the widget)
 - **Start with Windows**, start minimized to tray, opacity, position lock
@@ -211,6 +212,7 @@ app/settings_dialog.py  settings window
 app/application.py      tray, menus, wiring
 app/audio.py            per-app volume via the Core Audio mixer (ctypes COM)
 app/system.py           autostart and volume keys
+app/toast.py            "now playing" notification card
 app/updates.py          GitHub release update checks
 locales/                bundled translations
 skins/                  bundled skins
