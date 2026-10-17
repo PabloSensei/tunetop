@@ -42,7 +42,9 @@ the same in CI. Releases are cut by pushing a `v*` tag; the workflow fails unles
 equals `__version__` in `app/__init__.py`, then passes that version to Inno Setup — so bump
 `__version__` before tagging.
 `assets/icon.ico` and `docs/icon.png` are generated from the vector icon in `app/icons.py`
-by `tools/generate_icon.py` — rerun it after changing the icon design.
+by `tools/generate_icon.py` — rerun it after changing the icon design. The README
+screenshots in `docs/` come from `tools/render_screenshots.py` (offscreen, fake tracks,
+generated covers); rerun it after visual changes.
 
 ## Architecture
 

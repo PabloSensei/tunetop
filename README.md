@@ -23,26 +23,46 @@ plugins required.
 
 ## Features
 
-- **Always-on-top widget** — frameless, draggable, snaps to screen edges
-- **Transport buttons** — previous / play-pause / next, shuffle and repeat (when the
-  player supports them), album art, title and artist
-- **Track progress** with click-to-seek (when the source publishes a timeline)
-- **Album-art colours** — optionally tint the widget with the current cover
+### The widget
+
+- **Always on top** — frameless, draggable, snaps to screen edges; the position is
+  remembered separately for each monitor layout, so docking a laptop puts it back
+- **Controls** — previous / play-pause / next, plus shuffle and repeat when the player
+  supports them; album art, title, artist and a click-to-seek progress bar
+- **Three views** — full, a slim compact bar, and **cover only**: just the album art,
+  with the controls on hover. Double-click the widget to switch
+
+![views](docs/views.png)
+
+### Looks
+
 - **Skins** — a folder with a `skin.json`: colours, sizes, fonts, corner radius,
-  background image, custom icons. Dark, Light, Neon, Glass, Minimal Dark and
-  Minimal Light are bundled
-- **13 interface languages**, following Windows by default
+  background image, custom icons. Dark, Light, Neon, Glass, Minimal Dark and Minimal
+  Light are bundled
+- **Album-art colours** — optionally tint the widget with the colours of the current
+  cover; it fades smoothly from track to track and keeps the skin readable
+
+![album art tint](docs/art-tint.png)
+
+### Extras
+
+- **Synced lyrics** — optionally show the line being sung in place of the artist
+  (from [lrclib.net](https://lrclib.net))
+- **Per-player volume** — the mouse wheel and the volume hotkeys turn down just the
+  player, not the whole system, and show the new level for a moment (switchable)
+- **Track change card** — an optional "now playing" pop-up with the cover, always or
+  only while the widget is hidden
+
+![lyrics, volume and the track change card](docs/extras.png)
+
+### Everything else
+
 - **Global hotkeys** — show/hide, play-pause, next, previous, volume
-- **Per-player volume** — the wheel and volume hotkeys turn down just the player,
-  not the whole system (switchable)
 - **Tray icon** with the current track in its tooltip and a full command menu
-- **Synced lyrics** — optionally, the current line from lrclib.net instead of the artist
-- **Track change notification** — an optional "now playing" card with the cover
 - **Source picker** — follow the current Windows player, or pin one specific app
-- **Compact mode** — a slim bar with just the buttons, and **cover only** — just the
-  album art with the controls on hover (double-click the widget to switch views)
-- **Start with Windows**, start minimized to tray, opacity, position lock
-- **Multi-monitor aware** — the position is remembered separately for each monitor layout
+- **13 interface languages**, following Windows by default
+- **Start with Windows**, start minimized to tray, hide when nothing plays, opacity,
+  position lock
 - **Updates** — the installed version downloads, verifies and installs new releases
   itself (on request, or automatically); the portable exe points to the download page
 - Single instance: launching it again just shows the running widget
@@ -87,9 +107,9 @@ python -m venv .venv && .venv\Scripts\pip install -r requirements.txt && .venv\S
 | Action | Result |
 |---|---|
 | Drag an empty part | move the widget (snaps to screen edges) |
-| Double click | toggle compact mode |
+| Double click | switch view: full → compact → cover only |
 | Middle button | play / pause |
-| Wheel | system volume |
+| Wheel | volume of the player (or the system's, see settings) |
 | Right button | menu (same as the tray menu) |
 | Click the progress bar | seek |
 | Hover | reveals ⚙ (settings), — (to tray), ✕ (quit) |
@@ -225,6 +245,7 @@ assets/icon.ico         app icon, baked into the .exe by build-exe.bat
 installer/Tunetop.iss   Inno Setup script, built by build-installer.bat
 tests/test_basics.py    headless checks (no live media session needed)
 tools/generate_icon.py  regenerates docs/icon.png and assets/icon.ico
+tools/render_screenshots.py  regenerates the README screenshots in docs/
 ```
 
 Run the tests with:
@@ -238,8 +259,11 @@ Run the tests with:
 - Windows 10/11 only — SMTC does not exist on earlier versions.
 - Progress and seeking only work with sources that publish a timeline. Spotify and
   browsers do; foobar2000 does not, and the bar is hidden rather than shown empty.
-- The volume controls change the system volume (like the media keys on a keyboard),
-  not the volume of one specific app.
+- Per-player volume needs the player's own audio session; when Tunetop can't find it
+  (some sandboxed apps), the wheel and hotkeys fall back to the system volume.
+- There is no "like" button: Windows' media controls have no such command.
+- Lyrics are only as good as lrclib.net's catalogue; tracks without synced lyrics
+  just show the artist.
 
 ## License
 
