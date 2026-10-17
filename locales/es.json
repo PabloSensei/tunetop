@@ -59,6 +59,8 @@
   "settings.show_progress": "Mostrar el progreso (clic para avanzar)",
   "settings.show_mode_buttons": "Mostrar botones de aleatorio y repetir (si el reproductor los admite)",
   "settings.scroll_titles": "Desplazar los títulos largos",
+  "settings.show_lyrics": "Mostrar la letra sincronizada en lugar del artista",
+  "settings.lyrics_hint": "Las letras vienen de lrclib.net: para buscarlas se envían el título, el artista y la duración.",
   "settings.track_toast": "Aviso al cambiar de pista:",
   "settings.track_toast_off": "desactivado",
   "settings.track_toast_hidden": "cuando el widget está oculto",

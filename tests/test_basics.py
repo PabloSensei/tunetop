@@ -279,6 +279,42 @@ def test_autostart_command() -> None:
               command_target(command))
 
 
+def test_lyrics() -> None:
+    from app.lyrics import clean_query, line_at, parse_lrc, pick_result
+
+    lyrics = parse_lrc("[ar:Someone]\n[00:12.50]First\n[00:05.00][01:00.00]Chorus\n"
+                       "[00:20]\nnot a lyric line\n[1:02.3]Last")
+    check("lrc lines parsed and sorted", [t for t, _ in lyrics] == [5.0, 12.5, 20.0, 60.0, 62.3],
+          lyrics)
+    check("lrc repeated stamps", [w for t, w in lyrics if w == "Chorus"] == ["Chorus", "Chorus"])
+    check("line before the first", line_at(lyrics, 1.0) == (-1, ""))
+    check("line in the middle", line_at(lyrics, 13.0) == (1, "First"))
+    check("instrumental gap is blank", line_at(lyrics, 25.0) == (2, ""))
+    check("last line holds", line_at(lyrics, 500.0)[1] == "Last")
+    shifted = parse_lrc("[offset:+500]\n[00:10.00]Line")
+    check("lrc offset applied", abs(shifted[0][0] - 9.5) < 1e-9, shifted)
+    check("empty lrc", parse_lrc("") == [] and line_at([], 3.0) == (-1, ""))
+
+    check("video title cleaned", clean_query("", "Daft Punk - One More Time (Official Video)")
+          == ("Daft Punk", "One More Time"), clean_query("", "Daft Punk - One More Time (Official Video)"))
+    check("topic channel cleaned", clean_query("Daft Punk - Topic", "Digital Love")
+          == ("Daft Punk", "Digital Love"))
+    check("real dash title kept", clean_query("Muse", "Hysteria - Live") == ("Muse", "Hysteria - Live"))
+    check("artist-prefixed title split", clean_query("Muse", "Muse - Uprising [HD]")
+          == ("Muse", "Uprising"))
+
+    results = [
+        {"duration": 300, "syncedLyrics": "[00:01.00]too long"},
+        {"duration": 241, "syncedLyrics": None, "plainLyrics": "plain only"},
+        {"duration": 239, "syncedLyrics": "[00:01.00]close"},
+        {"duration": 240.5, "syncedLyrics": "[00:01.00]closest"},
+        "junk",
+    ]
+    check("best duration match picked", pick_result(results, 240.0) == "[00:01.00]closest")
+    check("no duration takes first synced", pick_result(results, 0.0) == "[00:01.00]too long")
+    check("nothing within tolerance", pick_result(results[:1], 100.0) == "")
+
+
 def test_app_icon() -> None:
     for size in (16, 32, 256):
         image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
@@ -366,6 +402,7 @@ def main() -> int:
     test_ambient_colors()
     test_playback_modes()
     test_autostart_command()
+    test_lyrics()
     test_sources()
     test_locales()
     print()

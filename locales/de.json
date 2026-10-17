@@ -59,6 +59,8 @@
   "settings.show_progress": "Fortschritt anzeigen (Klick zum Spulen)",
   "settings.show_mode_buttons": "Zufalls- und Wiederholen-Tasten anzeigen (falls der Player sie unterstützt)",
   "settings.scroll_titles": "Lange Titel laufen lassen",
+  "settings.show_lyrics": "Synchronisierten Songtext statt des Interpreten zeigen",
+  "settings.lyrics_hint": "Songtexte kommen von lrclib.net: Titel, Interpret und Länge werden zur Suche dorthin gesendet.",
   "settings.track_toast": "Hinweis bei Titelwechsel:",
   "settings.track_toast_off": "aus",
   "settings.track_toast_hidden": "wenn das Widget ausgeblendet ist",

@@ -59,6 +59,8 @@
   "settings.show_progress": "再生位置を表示（クリックでシーク）",
   "settings.show_mode_buttons": "シャッフルとリピートのボタンを表示（プレーヤーが対応している場合）",
   "settings.scroll_titles": "長いタイトルをスクロール",
+  "settings.show_lyrics": "アーティストの代わりに同期歌詞を表示",
+  "settings.lyrics_hint": "歌詞は lrclib.net から取得します。検索のため曲名・アーティスト・長さが送信されます。",
   "settings.track_toast": "曲の切り替え通知:",
   "settings.track_toast_off": "オフ",
   "settings.track_toast_hidden": "ウィジェットが非表示のとき",
