@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtCore import QPoint, QRectF, Qt, QTimer
-from PySide6.QtGui import QAction, QActionGroup, QIcon, QPainter, QPixmap
+from PySide6.QtCore import QPoint, QRectF, Qt, QTimer, QUrl
+from PySide6.QtGui import QAction, QActionGroup, QDesktopServices, QIcon, QPainter, QPixmap
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
-from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
+from PySide6.QtWidgets import (
+    QApplication, QMenu, QMessageBox, QProgressDialog, QSystemTrayIcon,
+)
 
 from . import __version__, icons, system
 from .config import Settings, migrate_legacy_config
@@ -21,9 +23,12 @@ from .updates import (
     RELEASES_PAGE_URL,
     ReleaseInfo,
     UpdateChecker,
+    UpdateDownloader,
     check_is_due,
     check_stamp,
+    installed_build,
     is_newer,
+    launch_installer,
     offer_update,
 )
 
@@ -54,6 +59,8 @@ class MusicControlApp:
         set_language(self.settings.language)
         self.dialog: SettingsDialog | None = None
         self._update_checker: UpdateChecker | None = None
+        self._downloader: UpdateDownloader | None = None
+        self._download_progress: QProgressDialog | None = None
         # Set when the user asks for the widget explicitly; suppresses the
         # "hide when nothing is playing" rule until a track shows up.
         self._forced_visible = False
@@ -366,9 +373,7 @@ class MusicControlApp:
             return False  # deliberately ignored; a fresh check may turn up a later one
         self._offered_update = known
         # The event loop is not running yet while the app is being constructed.
-        QTimer.singleShot(
-            0, lambda: offer_update(None, self.settings, ReleaseInfo(known, RELEASES_PAGE_URL))
-        )
+        QTimer.singleShot(0, lambda: self._handle_update(ReleaseInfo(known, RELEASES_PAGE_URL)))
         return True
 
     def _on_update_available(self, release) -> None:
@@ -376,7 +381,74 @@ class MusicControlApp:
         if release.version in (self.settings.skipped_update_version, self._offered_update):
             return
         self._offered_update = release.version
-        offer_update(None, self.settings, release)
+        self._handle_update(release)
+
+    def _handle_update(self, release: ReleaseInfo) -> None:
+        if self.settings.auto_install_updates and installed_build():
+            self._install_update(release, interactive=False)
+        elif offer_update(None, self.settings, release):
+            self._install_update(release)
+
+    def _install_update(self, release: ReleaseInfo, interactive: bool = True) -> None:
+        """Download, verify and run the installer, which restarts Tunetop."""
+        if self._downloader is not None:
+            return  # already on its way
+        downloader = UpdateDownloader(release)
+        self._downloader = downloader
+        text = tr("update.downloading", version=release.version)
+        if interactive:
+            progress = QProgressDialog(text, tr("update.cancel"), 0, 0)
+            progress.setWindowTitle(tr("update.title"))
+            progress.setMinimumDuration(0)
+            progress.setAutoClose(False)
+            progress.setAutoReset(False)
+            progress.canceled.connect(self._cancel_update_download)
+            downloader.progress.connect(self._on_update_progress)
+            self._download_progress = progress
+            progress.show()
+        else:
+            self.tray.showMessage("Tunetop", text, QSystemTrayIcon.MessageIcon.Information, 4000)
+        downloader.finished.connect(self._on_update_downloaded)
+        downloader.failed.connect(lambda error: self._on_update_download_failed(release, error))
+        downloader.start()
+
+    def _on_update_progress(self, received: int, total: int) -> None:
+        progress = self._download_progress
+        if progress is None or total <= 0:
+            return
+        progress.setMaximum(max(1, total // 1024))  # KiB keeps big files inside an int
+        progress.setValue(min(received, total) // 1024)
+
+    def _end_update_download(self) -> None:
+        self._downloader = None
+        progress, self._download_progress = self._download_progress, None
+        if progress is not None:
+            progress.canceled.disconnect(self._cancel_update_download)
+            progress.close()
+            progress.deleteLater()
+
+    def _cancel_update_download(self) -> None:
+        if self._downloader is not None:
+            self._downloader.cancel()
+        self._end_update_download()
+
+    def _on_update_downloaded(self, path, release) -> None:
+        self._end_update_download()
+        if not launch_installer(path):
+            self._on_update_download_failed(release, str(path))
+            return
+        self.tray.showMessage("Tunetop", tr("update.installing", version=release.version),
+                              QSystemTrayIcon.MessageIcon.Information, 4000)
+        self.quit()  # the installer replaces the exe and starts the new version
+
+    def _on_update_download_failed(self, release: ReleaseInfo, error: str) -> None:
+        self._end_update_download()
+        answer = QMessageBox.warning(
+            None, tr("update.title"), tr("update.download_failed", error=error),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            QDesktopServices.openUrl(QUrl(release.url or RELEASES_PAGE_URL))
 
     def _on_update_none(self) -> None:
         self._record_check("")
@@ -398,6 +470,7 @@ class MusicControlApp:
         self.dialog = SettingsDialog(self.settings, self.controller)
         self.dialog.setWindowIcon(self.app_icon())
         self.dialog.applied.connect(self._on_settings_applied)
+        self.dialog.install_requested.connect(self._install_update)
         self.dialog.finished.connect(self._on_settings_closed)
         self.controller.refresh()
         self.dialog.show()
@@ -429,7 +502,7 @@ class MusicControlApp:
         dialog, self.dialog = self.dialog, None
         if dialog is not None:
             tab = dialog.current_tab()
-            for signal in (dialog.applied, dialog.finished):
+            for signal in (dialog.applied, dialog.finished, dialog.install_requested):
                 try:
                     signal.disconnect()
                 except (RuntimeError, TypeError):

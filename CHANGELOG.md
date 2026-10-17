@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- In-app updates for the installed version: "Update now" downloads the new
+  release's installer, checks it against the SHA-256 file published with the
+  release, installs it silently and restarts Tunetop. An "Install updates
+  automatically" option skips the question. The portable exe, which can't
+  replace itself, keeps opening the download page.
+
 ### Changed
 
 - New, brighter app icon: a sound wave on a gradient that sweeps the hue wheel

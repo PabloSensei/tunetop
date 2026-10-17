@@ -141,6 +141,7 @@ class Settings:
 
     # updates
     check_for_updates: bool = True
+    auto_install_updates: bool = False  # installed build only: download and install unasked
     skipped_update_version: str = ""
     last_update_check: str = ""  # ISO timestamp of the last completed check; "" means never
     latest_known_version: str = ""  # newest version GitHub reported, so a restart can say so offline

@@ -177,6 +177,35 @@ def test_hotkeys() -> None:
         check(f"round trip {text}", parse_hotkey(text) == (3, vk), parse_hotkey(text))
 
 
+def test_updates() -> None:
+    from app.updates import installed_build, is_newer, parse_checksum, parse_release
+
+    release = parse_release({
+        "tag_name": "v1.4.0",
+        "html_url": "https://github.com/x/y/releases/tag/v1.4.0",
+        "assets": [
+            {"name": "Tunetop.exe", "browser_download_url": "https://e/Tunetop.exe"},
+            {"name": "TunetopSetup-1.4.0.exe", "browser_download_url": "https://e/setup.exe"},
+            {"name": "TunetopSetup-1.4.0.exe.sha256", "browser_download_url": "https://e/setup.sha"},
+            {"name": "TunetopSetup-evil.exe", "browser_download_url": "http://e/plain.exe"},
+            "junk",
+        ],
+    })
+    check("release version parsed", release.version == "1.4.0", release.version)
+    check("installer asset found", release.installer_url == "https://e/setup.exe",
+          release.installer_url)
+    check("checksum asset found", release.checksum_url == "https://e/setup.sha",
+          release.checksum_url)
+    bare = parse_release({"tag_name": "1.4.1"})
+    check("release without assets", bare.installer_url == "" and bare.checksum_url == "")
+    digest = "ab" * 32
+    check("checksum line parsed", parse_checksum(f"{digest.upper()}  TunetopSetup.exe\n") == digest)
+    check("bad checksum rejected", parse_checksum("not-a-hash file") == "")
+    check("empty checksum rejected", parse_checksum("") == "")
+    check("source run is not an installed build", installed_build() is False)
+    check("newer version compares", is_newer("1.10.0", "1.9.9") and not is_newer("1.2.3", "1.2.3"))
+
+
 def test_app_icon() -> None:
     for size in (16, 32, 256):
         image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
@@ -259,6 +288,7 @@ def main() -> int:
     test_skins()
     test_hotkeys()
     test_app_icon()
+    test_updates()
     test_sources()
     test_locales()
     print()

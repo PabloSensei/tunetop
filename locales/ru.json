@@ -87,6 +87,8 @@
 
   "settings.group.updates": "Обновления",
   "settings.check_updates": "Автоматически проверять обновления",
+  "settings.auto_install_updates": "Устанавливать обновления автоматически",
+  "settings.auto_install_unavailable": "Автоустановка работает только в установленной версии; портативный exe вместо этого открывает страницу загрузки.",
   "settings.check_updates_now": "Проверить обновления сейчас",
 
   "update.checking": "Проверка…",
@@ -97,6 +99,14 @@
   "update.download": "Скачать",
   "update.skip": "Пропустить эту версию",
   "update.later": "Позже",
+  "update.available_install": "Доступна версия Tunetop {version} — у вас {current}.\n\nУстановить сейчас? Tunetop перезапустится.",
+  "update.install": "Обновить",
+  "update.downloading": "Загрузка Tunetop {version}…",
+  "update.installing": "Устанавливается Tunetop {version} — он сейчас перезапустится.",
+  "update.cancel": "Отмена",
+  "update.download_failed": "Не удалось установить обновление: {error}\n\nОткрыть страницу загрузки?",
+  "update.no_installer": "у этого релиза нет установщика для загрузки",
+  "update.checksum_mismatch": "загруженный файл повреждён (не совпала контрольная сумма)",
 
   "about.tagline": "Маленький виджет управления музыкой поверх всех окон.",
   "about.mouse": "Управление мышью:",

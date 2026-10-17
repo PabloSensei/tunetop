@@ -87,6 +87,8 @@
 
   "settings.group.updates": "アップデート",
   "settings.check_updates": "自動的にアップデートを確認する",
+  "settings.auto_install_updates": "アップデートを自動的にインストール",
+  "settings.auto_install_unavailable": "自動インストールはインストール版でのみ動作します。ポータブル版はダウンロードページを開きます。",
   "settings.check_updates_now": "今すぐアップデートを確認",
 
   "update.checking": "確認中…",
@@ -97,6 +99,14 @@
   "update.download": "ダウンロード",
   "update.skip": "このバージョンをスキップ",
   "update.later": "後で",
+  "update.available_install": "Tunetop {version} が利用可能です（現在 {current}）。\n\n今すぐインストールしますか？ Tunetop は再起動します。",
+  "update.install": "今すぐ更新",
+  "update.downloading": "Tunetop {version} をダウンロード中…",
+  "update.installing": "Tunetop {version} をインストール中 — まもなく再起動します。",
+  "update.cancel": "キャンセル",
+  "update.download_failed": "アップデートをインストールできませんでした: {error}\n\n代わりにダウンロードページを開きますか？",
+  "update.no_installer": "このリリースにはダウンロードできるインストーラーがありません",
+  "update.checksum_mismatch": "ダウンロードが破損しています（チェックサム不一致）",
 
   "about.tagline": "常に最前面に表示される小さな音楽コントロール ウィジェット。",
   "about.mouse": "マウス操作:",
