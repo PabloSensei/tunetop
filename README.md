@@ -42,6 +42,7 @@ plugins required.
 - **Compact mode** — a slim bar with just the buttons, and **cover only** — just the
   album art with the controls on hover (double-click the widget to switch views)
 - **Start with Windows**, start minimized to tray, opacity, position lock
+- **Multi-monitor aware** — the position is remembered separately for each monitor layout
 - **Updates** — the installed version downloads, verifies and installs new releases
   itself (on request, or automatically); the portable exe points to the download page
 - Single instance: launching it again just shows the running widget

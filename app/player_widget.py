@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 
-from PySide6.QtCore import QPoint, QPointF, QRectF, QSize, Qt, QTimer, Signal
+from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import (
     QBrush, QColor, QFontMetricsF, QImage, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap,
 )
@@ -24,6 +24,8 @@ from .media import REPEAT_NONE, REPEAT_TRACK, PlayerState, friendly_source_name
 from .skins import Skin, load_skin
 
 SNAP_DISTANCE = 18
+MAX_LAYOUTS = 12  # monitor layouts whose widget position is remembered
+SCREEN_SETTLE_MS = 600  # Windows shuffles windows around right after a monitor change
 LYRIC_LEAD = 0.3  # show a lyric line this much early; reading lags hearing
 MIN_TIME_WIDTH = 72  # room "12:34 / 56:78" needs beside the button row
 AMBIENT_FADE = 0.6  # seconds to blend the art-tinted background into the next track's
@@ -68,6 +70,20 @@ def ambient_colors(image: QImage, dark: bool) -> tuple[QColor, QColor, QColor] |
     if vivid_score < 0.08:  # a greyscale cover has no colour worth borrowing
         accent = QColor()
     return top, bottom, accent
+
+
+def screen_signature(geometries: list[QRect]) -> str:
+    """A stable name for a monitor layout: each screen's size and origin, sorted."""
+    parts = sorted(f"{g.width()}x{g.height()}@{g.x()},{g.y()}" for g in geometries)
+    return "|".join(parts)
+
+
+def parse_position(text: object) -> QPoint | None:
+    try:
+        x, y = (int(part) for part in str(text).split(","))
+    except ValueError:
+        return None
+    return QPoint(x, y)
 
 
 def _mix(a: QColor, b: QColor, t: float) -> QColor:
@@ -150,6 +166,15 @@ class PlayerWidget(QWidget):
 
         self.apply_skin(settings.skin)
         self.restore_position()
+
+        self._screens_settle = QTimer(self)
+        self._screens_settle.setSingleShot(True)
+        self._screens_settle.setInterval(SCREEN_SETTLE_MS)
+        self._screens_settle.timeout.connect(self._on_screens_changed)
+        app = QApplication.instance()
+        if app is not None:
+            app.screenAdded.connect(lambda _screen: self._screens_settle.start())
+            app.screenRemoved.connect(lambda _screen: self._screens_settle.start())
 
     # ------------------------------------------------------------ appearance
 
@@ -821,23 +846,44 @@ class PlayerWidget(QWidget):
             y = area.bottom() - geo.height() + margin + 1
         self.move(x, y)
 
+    @staticmethod
+    def _layout() -> str:
+        return screen_signature([s.geometry() for s in QApplication.screens()])
+
     def save_position(self) -> None:
         if not self.settings.remember_position:
             return
         self.settings.pos_x = self.x()
         self.settings.pos_y = self.y()
+        positions = self.settings.positions
+        layout = self._layout()
+        positions.pop(layout, None)  # re-insert so the dict stays oldest-first
+        positions[layout] = f"{self.x()},{self.y()}"
+        while len(positions) > MAX_LAYOUTS:
+            positions.pop(next(iter(positions)))
         self.settings.save()
 
-    def restore_position(self) -> None:
+    def _on_screens_changed(self) -> None:
+        if self._drag_offset is not None:
+            return
+        if self.settings.remember_position:
+            self.restore_position()
+        else:
+            self.restore_position(self.pos())  # only rescue it from a screen that went away
+
+    def restore_position(self, point: QPoint | None = None) -> None:
         screen = QApplication.primaryScreen()
         area = screen.availableGeometry() if screen else None
-        x, y = self.settings.pos_x, self.settings.pos_y
-        if x is None or y is None or not self.settings.remember_position:
+        if point is None and self.settings.remember_position:
+            point = parse_position(self.settings.positions.get(self._layout(), ""))
+            x, y = self.settings.pos_x, self.settings.pos_y
+            if point is None and x is not None and y is not None:
+                point = QPoint(int(x), int(y))  # last place used, on whatever layout
+        if point is None:
             if area is None:
                 return
             self.move(area.right() - self.width() - 24, area.bottom() - self.height() - 24)
             return
-        point = QPoint(int(x), int(y))
         if area is not None:
             visible = any(s.availableGeometry().contains(
                 QPoint(point.x() + self.width() // 2, point.y() + self.height() // 2))

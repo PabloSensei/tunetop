@@ -131,6 +131,9 @@ class Settings:
     remember_position: bool = True
     pos_x: int | None = None
     pos_y: int | None = None
+    # "x,y" per monitor layout ("1920x1080@0,0|2560x1440@1920,0"), so docking a
+    # laptop puts the widget back where it lived on that desk
+    positions: dict[str, str] = field(default_factory=dict)
     start_in_tray: bool = False
     autostart: bool = False
     hide_when_no_music: bool = False
