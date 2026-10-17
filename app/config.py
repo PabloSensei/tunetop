@@ -118,6 +118,7 @@ class Settings:
     show_album_art: bool = True
     art_background: bool = False  # tint the card with colours taken from the album art
     show_progress: bool = True
+    show_mode_buttons: bool = True  # shuffle/repeat, when the player supports them
     scroll_long_titles: bool = True
 
     # window behaviour

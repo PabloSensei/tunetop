@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cover's colours (kept dark or light to match the skin, and translucent on
   Glass), with the progress bar in the cover's most vivid colour, and fades
   smoothly into the next track's colours.
+- Shuffle and repeat buttons next to the transport controls (and in the tray
+  menu) for players that expose them through Windows; repeat cycles off → all →
+  one track. They stay hidden for players that don't support them. A "like"
+  button isn't possible: Windows' media controls have no such command.
 
 ### Changed
 

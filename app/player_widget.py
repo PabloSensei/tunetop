@@ -19,10 +19,11 @@ from PySide6.QtWidgets import QApplication, QWidget
 from . import icons
 from .config import Settings
 from .i18n import tr
-from .media import PlayerState, friendly_source_name
+from .media import REPEAT_NONE, REPEAT_TRACK, PlayerState, friendly_source_name
 from .skins import Skin, load_skin
 
 SNAP_DISTANCE = 18
+MIN_TIME_WIDTH = 72  # room "12:34 / 56:78" needs beside the button row
 AMBIENT_FADE = 0.6  # seconds to blend the art-tinted background into the next track's
 
 
@@ -269,6 +270,17 @@ class PlayerWidget(QWidget):
                                  ("next", "next_track")):
                 buttons.append(HitButton(name, action, QRectF(x, y, btn, btn)))
                 x += btn + btn_gap
+            # Shuffle/repeat sit after the transport row, smaller, if the time still fits.
+            mode_btn = round(btn * 0.8)
+            mode_w = 2 * (mode_btn + btn_gap) + 4
+            if self.settings.show_mode_buttons and text_w - row_w - mode_w >= MIN_TIME_WIDTH:
+                x += 4
+                offset = (btn - mode_btn) / 2
+                for name, action in (("shuffle", "shuffle"), ("repeat", "repeat")):
+                    buttons.append(HitButton(name, action,
+                                             QRectF(x, y + offset, mode_btn, mode_btn), False, "mode"))
+                    x += mode_btn + btn_gap
+                row_w += mode_w
             self._time_rect = QRectF(text_left + row_w + 8, y,
                                      max(0.0, text_w - row_w - 8), btn)
             y += btn + prog_gap
@@ -291,6 +303,14 @@ class PlayerWidget(QWidget):
                 button.enabled = state.connected and state.can_next
             elif button.action == "prev_track":
                 button.enabled = state.connected and state.can_prev
+        for button in self._buttons:
+            if button.role != "mode":
+                continue
+            if button.action == "shuffle":
+                button.enabled = state.connected and state.can_shuffle
+            else:
+                button.enabled = state.connected and state.can_repeat
+                button.name = "repeat_one" if state.repeat == REPEAT_TRACK else "repeat"
 
     # ---------------------------------------------------------------- state
 
@@ -531,8 +551,17 @@ class PlayerWidget(QWidget):
         for button in self._buttons:
             if button.role == "chrome" and not self._hovered:
                 continue
+            if button.role == "mode" and not button.enabled:
+                continue  # the player can't do it; an inert icon would only confuse
             hovered = button is self._hover
-            if button.role == "chrome":
+            if button.role == "mode":
+                active = (self.state.shuffle if button.action == "shuffle"
+                          else self.state.repeat != REPEAT_NONE)
+                color = self._progress_color if active else self.skin.color("icon_disabled")
+                if hovered:
+                    color = color.lighter(125) if active else self.skin.color("icon")
+                scale = 0.78
+            elif button.role == "chrome":
                 color = self.skin.color("chrome")
                 if hovered:
                     color = self.skin.color("close_hover" if button.action == "quit"
@@ -544,7 +573,7 @@ class PlayerWidget(QWidget):
             else:
                 color = self.skin.color("icon_hover" if hovered else "icon")
                 scale = 0.62
-            if hovered and button.enabled and button.role == "transport":
+            if hovered and button.enabled and button.role in ("transport", "mode"):
                 bg = self.skin.color("icon_bg_hover")
                 if bg.alpha():
                     painter.setPen(Qt.PenStyle.NoPen)
@@ -562,6 +591,8 @@ class PlayerWidget(QWidget):
     def _button_at(self, pos) -> HitButton | None:
         for button in self._buttons:
             if button.role == "chrome" and not self._hovered:
+                continue
+            if button.role == "mode" and not button.enabled:
                 continue
             if button.rect.adjusted(-2, -2, 2, 2).contains(pos):
                 return button

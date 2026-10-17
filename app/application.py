@@ -175,6 +175,18 @@ class MusicControlApp:
         next_action = QAction(tr("menu.next"), menu)
         next_action.triggered.connect(lambda: self.run_action("next_track", None))
         menu.addAction(next_action)
+        if state.can_shuffle:
+            shuffle = QAction(tr("menu.shuffle"), menu)
+            shuffle.setCheckable(True)
+            shuffle.setChecked(state.shuffle)
+            shuffle.triggered.connect(lambda: self.run_action("shuffle", None))
+            menu.addAction(shuffle)
+        if state.can_repeat:
+            repeat = QAction(tr("menu.repeat"), menu)
+            repeat.setCheckable(True)
+            repeat.setChecked(state.repeat != 0)
+            repeat.triggered.connect(lambda: self.run_action("repeat", None))
+            menu.addAction(repeat)
         menu.addSeparator()
 
         source_menu = menu.addMenu(tr("menu.source"))

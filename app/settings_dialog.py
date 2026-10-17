@@ -201,14 +201,17 @@ class SettingsDialog(QDialog):
         self.cb_progress = QCheckBox(tr("settings.show_progress"))
         self.cb_progress.setChecked(self.settings.show_progress)
         self.cb_progress.toggled.connect(lambda v: self._set("show_progress", v, "layout"))
+        self.cb_mode_buttons = QCheckBox(tr("settings.show_mode_buttons"))
+        self.cb_mode_buttons.setChecked(self.settings.show_mode_buttons)
+        self.cb_mode_buttons.toggled.connect(lambda v: self._set("show_mode_buttons", v, "layout"))
         self.cb_scroll = QCheckBox(tr("settings.scroll_titles"))
         self.cb_scroll.setChecked(self.settings.scroll_long_titles)
         self.cb_scroll.toggled.connect(lambda v: self._set("scroll_long_titles", v, ""))
         self.cb_wheel = QCheckBox(tr("settings.wheel_volume"))
         self.cb_wheel.setChecked(self.settings.wheel_volume)
         self.cb_wheel.toggled.connect(lambda v: self._set("wheel_volume", v, ""))
-        for widget in (self.cb_art, self.cb_art_bg, self.cb_progress, self.cb_scroll,
-                       self.cb_wheel):
+        for widget in (self.cb_art, self.cb_art_bg, self.cb_progress, self.cb_mode_buttons,
+                       self.cb_scroll, self.cb_wheel):
             content_form.addWidget(widget)
 
         volume_row = QHBoxLayout()

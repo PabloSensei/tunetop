@@ -32,6 +32,15 @@ ART_SETTLE_POLLS = 5
 # blink, so a session is only given up on once it has stayed gone this long.
 SESSION_GRACE = 1.5
 
+# MediaPlaybackAutoRepeatMode
+REPEAT_NONE, REPEAT_TRACK, REPEAT_LIST = 0, 1, 2
+
+
+def next_repeat_mode(mode: int) -> int:
+    """The repeat button cycles off -> whole list -> this track -> off, like most players."""
+    return {REPEAT_NONE: REPEAT_LIST, REPEAT_LIST: REPEAT_TRACK}.get(mode, REPEAT_NONE)
+
+
 # GlobalSystemMediaTransportControlsSessionPlaybackStatus
 STATUS_NAMES = {
     0: "closed",
@@ -101,6 +110,10 @@ class PlayerState:
     can_next: bool = False
     can_prev: bool = False
     can_seek: bool = False
+    can_shuffle: bool = False
+    can_repeat: bool = False
+    shuffle: bool = False
+    repeat: int = REPEAT_NONE
     position: float = 0.0
     duration: float = 0.0
     captured_at: float = field(default_factory=time.monotonic)
@@ -130,6 +143,7 @@ class PlayerState:
         return (
             self.app_id, self.title, self.artist, self.status, self.can_play,
             self.can_pause, self.can_next, self.can_prev, self.art_key, self.connected,
+            self.can_shuffle, self.can_repeat, self.shuffle, self.repeat,
         )
 
 
@@ -488,6 +502,15 @@ class MediaController(QObject):
             state.can_seek = bool(controls.is_playback_position_enabled)
         except Exception:
             pass
+        try:  # separately: older players leave these unset, which must not cost the above
+            state.can_shuffle = bool(info.controls.is_shuffle_enabled)
+            state.can_repeat = bool(info.controls.is_repeat_enabled)
+            shuffle = info.is_shuffle_active
+            state.shuffle = bool(shuffle) if shuffle is not None else False
+            repeat = info.auto_repeat_mode
+            state.repeat = int(repeat) if repeat is not None else REPEAT_NONE
+        except Exception:
+            pass
 
         if new_track:
             self._reset_position()
@@ -537,6 +560,13 @@ class MediaController(QObject):
                 await session.try_skip_next_async()
             elif action == "prev_track":
                 await session.try_skip_previous_async()
+            elif action == "shuffle":
+                await session.try_change_shuffle_active_async(not self.state.shuffle)
+            elif action == "repeat":
+                from winsdk.windows.media import MediaPlaybackAutoRepeatMode
+
+                mode = MediaPlaybackAutoRepeatMode(next_repeat_mode(self.state.repeat))
+                await session.try_change_auto_repeat_mode_async(mode)
             elif action == "seek" and value is not None:
                 await session.try_change_playback_position_async(int(value * 10_000_000))
                 self._reset_position()  # take the player's word for it after a seek
