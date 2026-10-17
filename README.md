@@ -38,7 +38,8 @@ plugins required.
 - **Tray icon** with the current track in its tooltip and a full command menu
 - **Track change notification** — an optional "now playing" card with the cover
 - **Source picker** — follow the current Windows player, or pin one specific app
-- **Compact mode** — a slim bar with just the buttons (double-click the widget)
+- **Compact mode** — a slim bar with just the buttons, and **cover only** — just the
+  album art with the controls on hover (double-click the widget to switch views)
 - **Start with Windows**, start minimized to tray, opacity, position lock
 - **Updates** — the installed version downloads, verifies and installs new releases
   itself (on request, or automatically); the portable exe points to the download page
@@ -122,6 +123,7 @@ named in `extends`.
 
   "size": [340, 92],
   "compact_size": [252, 40],
+  "cover_size": 104,
   "radius": 14,
   "padding": 10,
   "spacing": 10,

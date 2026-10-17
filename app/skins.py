@@ -23,6 +23,7 @@ DEFAULT_SKIN: dict = {
     "author": "",
     "size": [340, 92],
     "compact_size": [252, 40],
+    "cover_size": 104,  # side of the square card in "cover only" mode
     "radius": 14,
     "padding": 10,
     "spacing": 10,
