@@ -38,8 +38,9 @@ Standalone exe: `build-exe.bat` (PyInstaller `--onefile --windowed`, bundling `s
 `locales/` via `--add-data`, `--icon assets/icon.ico`). `build-installer.bat` builds that
 exe and then wraps it in a Windows installer via Inno Setup (`installer/Tunetop.iss`,
 needs `ISCC.exe` on the machine — `choco install innosetup`); the release workflow does
-the same in CI. Releases are cut by pushing a `v*` tag; the workflow reads the version
-from the tag name (stripping the `v`) and passes it to both PyInstaller and Inno Setup.
+the same in CI. Releases are cut by pushing a `v*` tag; the workflow fails unless the tag (minus the `v`)
+equals `__version__` in `app/__init__.py`, then passes that version to Inno Setup — so bump
+`__version__` before tagging.
 `assets/icon.ico` and `docs/icon.png` are generated from the vector icon in `app/icons.py`
 by `tools/generate_icon.py` — rerun it after changing the icon design.
 

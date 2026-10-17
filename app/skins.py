@@ -89,9 +89,13 @@ class Skin:
     def author(self) -> str:
         return str(self.data.get("author") or "")
 
+    def _section(self, name: str) -> dict:
+        section = self.data.get(name)
+        return section if isinstance(section, dict) else {}
+
     def color(self, key: str) -> QColor:
-        raw = self.data.get("colors", {}).get(key)
-        if raw is None:
+        raw = self._section("colors").get(key)
+        if not isinstance(raw, str):
             raw = DEFAULT_SKIN["colors"].get(key, "#ff00ff")
         color = QColor(raw)
         if not color.isValid():
@@ -115,21 +119,30 @@ class Skin:
             return tuple(DEFAULT_SKIN["compact_size" if compact else "size"])  # type: ignore
 
     def font(self, key: str) -> QFont:
-        spec = self.data.get("fonts", {}).get(key, {})
+        spec = self._section("fonts").get(key)
+        if not isinstance(spec, dict):
+            spec = {}
         default = DEFAULT_SKIN["fonts"].get(key, {"family": "Segoe UI", "size": 9, "bold": False})
         font = QFont(str(spec.get("family", default["family"])))
-        font.setPointSizeF(float(spec.get("size", default["size"])))
+        try:
+            size = float(spec.get("size", default["size"]))
+        except (TypeError, ValueError):
+            size = float(default["size"])
+        font.setPointSizeF(size if size > 0 else float(default["size"]))
         font.setBold(bool(spec.get("bold", default["bold"])))
         if spec.get("italic"):
             font.setItalic(True)
-        if spec.get("letter_spacing"):
-            font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing,
-                                  float(spec["letter_spacing"]))
+        try:
+            spacing = float(spec.get("letter_spacing") or 0)
+        except (TypeError, ValueError):
+            spacing = 0.0
+        if spacing:
+            font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, spacing)
         return font
 
     def background_pixmap(self) -> QPixmap | None:
         name = self.data.get("background_image") or ""
-        if not name:
+        if not isinstance(name, str) or not name:
             return None
         image_path = self.path / name
         if not image_path.exists():
@@ -138,8 +151,8 @@ class Skin:
         return None if pixmap.isNull() else pixmap
 
     def icon_pixmap(self, key: str) -> QPixmap | None:
-        name = (self.data.get("icons") or {}).get(key)
-        if not name:
+        name = self._section("icons").get(key)
+        if not isinstance(name, str) or not name:
             return None
         image_path = self.path / name
         if not image_path.exists():
@@ -153,9 +166,10 @@ def _load_manifest(folder: Path) -> dict | None:
     if not manifest.exists():
         return None
     try:
-        return json.loads(manifest.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError):  # ValueError covers bad JSON and bad UTF-8
         return None
+    return data if isinstance(data, dict) else None
 
 
 def skin_folders() -> dict[str, Path]:
@@ -182,7 +196,7 @@ def load_skin(skin_id: str) -> Skin:
     data = DEFAULT_SKIN
     parent = manifest.get("extends")
     seen = {folder.name}
-    while parent and parent in folders and parent not in seen:
+    while isinstance(parent, str) and parent in folders and parent not in seen:
         seen.add(parent)
         parent_manifest = _load_manifest(folders[parent]) or {}
         data = _deep_merge(data, parent_manifest)

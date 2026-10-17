@@ -25,6 +25,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt pyinstaller
 
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $appVersion = (Select-String -Path app\__init__.py -Pattern '__version__ = "(.+)"').Matches[0].Groups[1].Value
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $tagVersion = "${{ github.ref_name }}" -replace '^v', ''
+            # A build that reports an older version than its tag offers itself as an
+            # update forever, so refuse to release it.
+            if ($tagVersion -ne $appVersion) {
+              Write-Error "Tag $tagVersion does not match __version__ $appVersion in app/__init__.py"
+              exit 1
+            }
+          }
+          "value=$appVersion" >> $env:GITHUB_OUTPUT
+
       - name: Run tests
         env:
           QT_QPA_PLATFORM: offscreen
@@ -45,8 +61,7 @@ jobs:
       - name: Build installer
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}" -replace '^v', ''
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$version" installer\Tunetop.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=${{ steps.version.outputs.value }}" installer\Tunetop.iss
 
       - name: Package
         run: |
@@ -56,7 +71,7 @@ jobs:
           copy README.ru.md release\
           copy LICENSE release\
           copy CHANGELOG.md release\
-          Compress-Archive -Path release\* -DestinationPath Tunetop-${{ github.ref_name }}-windows.zip
+          Compress-Archive -Path release\* -DestinationPath Tunetop-v${{ steps.version.outputs.value }}-windows.zip
 
       - uses: actions/upload-artifact@v4
         with:

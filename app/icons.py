@@ -10,7 +10,9 @@ from __future__ import annotations
 import math
 
 from PySide6.QtCore import QPointF, QRectF, Qt
-from PySide6.QtGui import QColor, QLinearGradient, QPainter, QPainterPath, QPen
+from PySide6.QtGui import (
+    QColor, QLinearGradient, QPainter, QPainterPath, QPen, QRadialGradient,
+)
 
 UNIT = 24.0
 
@@ -167,9 +169,37 @@ def paint_icon(painter: QPainter, name: str, rect: QRectF, color: QColor,
     painter.restore()
 
 
+def _hue_shifted(color: QColor, degrees: float) -> QColor:
+    """`color` rotated round the hue wheel, kept saturated and bright enough to glow."""
+    hue, sat, val, _ = color.getHsvF()
+    if hue < 0:  # achromatic accent (grey/white): borrow the default blue's hue
+        hue = 0.63
+    return QColor.fromHsvF((hue + degrees / 360.0) % 1.0, max(sat, 0.65), max(val, 0.9), 1.0)
+
+
+def _sound_wave(rect: QRectF) -> QPainterPath:
+    """Vertical bars of a sound wave, centred in `rect`. Fewer, wider bars when tiny."""
+    side = min(rect.width(), rect.height())
+    if side < 24:
+        heights, width, gap = (0.36, 0.62, 0.36), 0.14, 0.08
+    else:
+        heights, width, gap = (0.22, 0.42, 0.6, 0.42, 0.22), 0.085, 0.045
+    width *= side
+    gap *= side
+    x = rect.center().x() - (len(heights) * width + (len(heights) - 1) * gap) / 2
+    path = QPainterPath()
+    for height in heights:
+        bar = side * height
+        path.addRoundedRect(QRectF(x, rect.center().y() - bar / 2, width, bar),
+                            width / 2, width / 2)
+        x += width + gap
+    return path
+
+
 def paint_app_icon(painter: QPainter, rect: QRectF, accent: QColor) -> None:
-    """Draw the full app icon: a rounded square in `accent`, shaded into a darker
-    corner for depth, a soft top highlight, and the note glyph on top.
+    """Draw the full app icon: a rounded square in a diagonal gradient that sweeps
+    the hue wheel either side of `accent`, lit from the top-left, with a white
+    sound wave on top.
 
     Shared by the live tray/window icon (tinted with the active skin's accent)
     and `tools/generate_icon.py` (fixed accent, baked into the static assets).
@@ -177,19 +207,32 @@ def paint_app_icon(painter: QPainter, rect: QRectF, accent: QColor) -> None:
     painter.save()
     painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
     painter.setPen(Qt.PenStyle.NoPen)
-    radius = min(rect.width(), rect.height()) * 0.28
+    side = min(rect.width(), rect.height())
+    radius = side * 0.26
 
-    fill = QLinearGradient(rect.topLeft(), QPointF(rect.left() + rect.width() * 0.15, rect.bottom()))
-    fill.setColorAt(0.0, accent)
-    fill.setColorAt(1.0, accent.darker(135))
+    fill = QLinearGradient(rect.topLeft(), rect.bottomRight())
+    fill.setColorAt(0.0, _hue_shifted(accent, -45))
+    fill.setColorAt(0.5, _hue_shifted(accent, 0))
+    fill.setColorAt(1.0, _hue_shifted(accent, 75))
     painter.setBrush(fill)
     painter.drawRoundedRect(rect, radius, radius)
 
-    highlight = QLinearGradient(rect.topLeft(), QPointF(rect.left(), rect.top() + rect.height() * 0.55))
-    highlight.setColorAt(0.0, QColor(255, 255, 255, 40))
-    highlight.setColorAt(1.0, QColor(255, 255, 255, 0))
-    painter.setBrush(highlight)
+    glow = QRadialGradient(QPointF(rect.left() + side * 0.25, rect.top() + side * 0.15),
+                           side * 0.75)
+    glow.setColorAt(0.0, QColor(255, 255, 255, 90))
+    glow.setColorAt(1.0, QColor(255, 255, 255, 0))
+    painter.setBrush(glow)
     painter.drawRoundedRect(rect, radius, radius)
 
-    paint_icon(painter, "note", rect, QColor("#ffffff"), 0.62)
+    shade = QLinearGradient(QPointF(rect.left(), rect.top() + side * 0.55), rect.bottomLeft())
+    shade.setColorAt(0.0, QColor(0, 0, 0, 0))
+    shade.setColorAt(1.0, QColor(0, 0, 0, 50))
+    painter.setBrush(shade)
+    painter.drawRoundedRect(rect, radius, radius)
+
+    wave = _sound_wave(rect)
+    painter.setBrush(QColor(0, 0, 0, 60))
+    painter.drawPath(wave.translated(0, side * 0.025))
+    painter.setBrush(QColor("#ffffff"))
+    painter.drawPath(wave)
     painter.restore()

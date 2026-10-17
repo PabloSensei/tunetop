@@ -71,6 +71,8 @@ class PlayerWidget(QWidget):
         self._title_rect = QRectF()
         self._artist_rect = QRectF()
         self._time_rect = QRectF()
+        self._title_overflows = False
+        self._flags: Qt.WindowType | None = None
 
         self.setWindowTitle("Tunetop")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -88,7 +90,7 @@ class PlayerWidget(QWidget):
 
     # ------------------------------------------------------------ appearance
 
-    def _apply_window_flags(self) -> None:
+    def _apply_window_flags(self) -> bool:
         flags = (
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.Tool
@@ -96,13 +98,18 @@ class PlayerWidget(QWidget):
         )
         if self.settings.always_on_top:
             flags |= Qt.WindowType.WindowStaysOnTopHint
-        self.setWindowFlags(flags)
+        # setWindowFlags recreates the native window, hiding it on the way; doing
+        # that on every opacity slider tick made the widget flicker.
+        changed = flags != self._flags
+        if changed:
+            self._flags = flags
+            self.setWindowFlags(flags)
         self.setWindowOpacity(max(0.2, min(1.0, self.settings.opacity)))
+        return changed
 
     def refresh_window_flags(self) -> None:
         visible = self.isVisible()
-        self._apply_window_flags()
-        if visible:
+        if self._apply_window_flags() and visible:
             self.show()
 
     def apply_skin(self, skin_id: str) -> None:
@@ -378,7 +385,8 @@ class PlayerWidget(QWidget):
         width = metrics.horizontalAdvance(text)
         painter.setPen(color)
         align = int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        if width <= rect.width() or not self.settings.scroll_long_titles:
+        self._title_overflows = width > rect.width()
+        if not self._title_overflows or not self.settings.scroll_long_titles:
             elided = metrics.elidedText(text, Qt.TextElideMode.ElideRight, int(rect.width()))
             painter.drawText(rect, align, elided)
             return
@@ -485,9 +493,7 @@ class PlayerWidget(QWidget):
                 self.command.emit(button.action, None)
             return
 
-        if (not self._progress_rect.isEmpty() and self.state.can_seek
-                and self.state.duration > 0
-                and self._progress_rect.adjusted(0, -5, 0, 5).contains(pos)):
+        if self._seekable_at(pos):
             self._seeking = True
             self._update_seek(pos)
             return
@@ -523,8 +529,13 @@ class PlayerWidget(QWidget):
             self.save_position()
 
     def mouseDoubleClickEvent(self, event) -> None:  # noqa: N802
-        if event.button() == Qt.MouseButton.LeftButton and self._button_at(event.position()) is None:
-            self.set_compact(not self.settings.compact)
+        pos = event.position()
+        if event.button() != Qt.MouseButton.LeftButton or self._button_at(pos) is not None:
+            return
+        if self._seekable_at(pos):
+            return  # a fast double seek is not a request for compact mode
+        self.set_compact(not self.settings.compact)
+        self.settings.save()
 
     def wheelEvent(self, event) -> None:  # noqa: N802
         if not self.settings.wheel_volume:
@@ -532,6 +543,11 @@ class PlayerWidget(QWidget):
         delta = event.angleDelta().y()
         if delta:
             self.command.emit("volume_up" if delta > 0 else "volume_down", None)
+
+    def _seekable_at(self, pos) -> bool:
+        return (not self._progress_rect.isEmpty() and self.state.can_seek
+                and self.state.duration > 0
+                and self._progress_rect.adjusted(0, -5, 0, 5).contains(pos))
 
     def _update_seek(self, pos) -> None:
         if self._progress_rect.width() <= 0:
@@ -591,7 +607,10 @@ class PlayerWidget(QWidget):
         if not self.isVisible():
             return
         needs_repaint = False
-        if self.settings.scroll_long_titles and time.monotonic() > self._scroll_hold:
+        # Only a title that actually scrolls needs frames; repainting a static one
+        # 30 times a second just burns CPU.
+        if (self.settings.scroll_long_titles and self._title_overflows
+                and time.monotonic() > self._scroll_hold):
             self._scroll += 0.6
             needs_repaint = True
         if self.state.playing and self.state.duration > 0 and not self._progress_rect.isEmpty():

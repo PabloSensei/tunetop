@@ -4,6 +4,52 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- New, brighter app icon: a sound wave on a gradient that sweeps the hue wheel
+  around the skin's accent colour, instead of a flat single-colour square. The
+  tray icon still follows the active skin.
+
+### Fixed
+
+- With "hide the widget when nothing is playing" on, hiding the widget by hand
+  while music played was undone by the next poll a second later. Only a hide the
+  idle rule made itself is now undone when a track appears.
+- Dragging the opacity slider recreated the widget's window on every step, making
+  it flicker; the window is now only rebuilt when its flags actually change.
+- A remembered update was offered on every start without GitHub ever being asked
+  again, so a release that superseded it was never noticed.
+- One media session vanishing mid-read (a player closing at the wrong moment)
+  could stop the media thread for good and show the "SMTC failed" error.
+- A transport command published its own state in parallel with the poll loop,
+  which could scramble position and artwork bookkeeping.
+- The tray menu could be replaced, and freed, while it was open; it is now one
+  menu refilled each time it opens, so it never shows a stale play/pause label.
+- A settings file that was not valid UTF-8, not a JSON object, or had a value of
+  the wrong type (`"opacity": "high"`) crashed the app on start instead of
+  falling back to defaults. Skin manifests and locale files with similar damage
+  (unreadable bytes, a non-numeric font size, `colors` that is not an object)
+  no longer crash either.
+- The numpad "+" key could be captured as a hotkey but never registered, because
+  it was saved as `Num+` and the `+` was read back as a separator. It is now
+  saved as `NumPlus`. Keys without a name (saved as `VKE2` and similar) can now
+  be registered too.
+- Choosing an unsupported hotkey still took the same combination away from the
+  action that had it.
+- The autostart checkbox stayed ticked when writing the registry entry failed.
+- Double-clicking compact mode on/off was not saved until the app quit, and a
+  quick double click on the progress bar toggled compact mode.
+- The widget repainted 30 times a second whenever title scrolling was enabled,
+  even when the title fit and nothing moved.
+
+### Build
+
+- The release workflow refuses a tag that does not match `__version__` in
+  `app/__init__.py` (such a build would offer itself as an update forever), and
+  manual runs no longer name the installer after the branch.
+
 ## [1.2.3] — 2026-08-22
 
 ### Fixed

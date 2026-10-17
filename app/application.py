@@ -57,6 +57,10 @@ class MusicControlApp:
         # Set when the user asks for the widget explicitly; suppresses the
         # "hide when nothing is playing" rule until a track shows up.
         self._forced_visible = False
+        # Set only when the idle rule hid the widget, so it is the only kind of
+        # hiding a returning track undoes; a hide the user asked for sticks.
+        self._auto_hidden = False
+        self._offered_update = ""  # version already shown this session
         self._idle_hide = QTimer()
         self._idle_hide.setSingleShot(True)
         self._idle_hide.setInterval(IDLE_HIDE_DELAY_MS)
@@ -77,7 +81,9 @@ class MusicControlApp:
         self._apply_hotkeys()
 
         self.controller.start()
-        if not self.settings.start_in_tray:
+        if self.settings.start_in_tray:
+            self._auto_hidden = True  # with hide-when-idle on, the first track shows it
+        else:
             self.widget.show()
         self._maybe_check_for_updates()
 
@@ -127,11 +133,23 @@ class MusicControlApp:
         self._refresh_icon()
         self.tray.setToolTip("Tunetop")
         self.tray.activated.connect(self._on_tray_activated)
-        self.tray.setContextMenu(self._build_menu())
+        # One long-lived menu, refilled right before it opens, so it never shows a
+        # stale play/pause label or source list, and is never swapped out (and
+        # garbage collected) while it is on screen.
+        self._tray_menu = QMenu()
+        self._tray_menu.aboutToShow.connect(lambda: self._build_menu(self._tray_menu))
+        self._build_menu(self._tray_menu)
+        self.tray.setContextMenu(self._tray_menu)
         self.tray.show()
 
-    def _build_menu(self) -> QMenu:
-        menu = QMenu()
+    def _build_menu(self, menu: QMenu | None = None) -> QMenu:
+        if menu is None:
+            menu = QMenu()
+        else:
+            for action in menu.actions():
+                if action.menu() is not None:
+                    action.menu().deleteLater()  # submenus are not freed by clear()
+            menu.clear()
 
         toggle = QAction(tr("menu.hide_widget") if self.widget.isVisible()
                          else tr("menu.show_widget"), menu)
@@ -207,7 +225,8 @@ class MusicControlApp:
         return menu
 
     def _refresh_menu(self) -> None:
-        self.tray.setContextMenu(self._build_menu())
+        if not self._tray_menu.isVisible():
+            self._build_menu(self._tray_menu)
 
     def _on_tray_activated(self, reason) -> None:
         if reason in (QSystemTrayIcon.ActivationReason.Trigger,
@@ -243,12 +262,14 @@ class MusicControlApp:
 
     def show_widget(self) -> None:
         self._forced_visible = True
+        self._auto_hidden = False
         self.widget.show()
         self.widget.raise_()
         self._refresh_menu()
 
     def hide_widget(self) -> None:
         self._forced_visible = False
+        self._auto_hidden = False
         self.widget.save_position()
         self.widget.hide()
         self._refresh_menu()
@@ -295,8 +316,10 @@ class MusicControlApp:
             if state.has_track:
                 self._forced_visible = False
                 self._idle_hide.stop()
-                if not self.widget.isVisible():
+                if self._auto_hidden:
+                    self._auto_hidden = False
                     self.widget.show()
+                    self._refresh_menu()
             elif self.widget.isVisible() and not self._forced_visible:
                 if not self._idle_hide.isActive():
                     self._idle_hide.start()  # confirmed by _hide_if_still_idle
@@ -311,6 +334,8 @@ class MusicControlApp:
             return
         if self.controller.state.has_track or not self.widget.isVisible():
             return
+        self._auto_hidden = True
+        self.widget.save_position()
         self.widget.hide()
         self._refresh_menu()
 
@@ -322,8 +347,9 @@ class MusicControlApp:
     def _maybe_check_for_updates(self) -> None:
         if not self.settings.check_for_updates:
             return
-        if self._offer_known_update():
-            return  # an earlier run already found it; no point asking GitHub again
+        self._offer_known_update()
+        # Still ask GitHub when due: the remembered version may have been
+        # superseded since, and without a fresh check it would be offered forever.
         if not check_is_due(self.settings.last_update_check):
             return
         self._update_checker = UpdateChecker()
@@ -338,6 +364,7 @@ class MusicControlApp:
             return False
         if known == self.settings.skipped_update_version:
             return False  # deliberately ignored; a fresh check may turn up a later one
+        self._offered_update = known
         # The event loop is not running yet while the app is being constructed.
         QTimer.singleShot(
             0, lambda: offer_update(None, self.settings, ReleaseInfo(known, RELEASES_PAGE_URL))
@@ -346,8 +373,9 @@ class MusicControlApp:
 
     def _on_update_available(self, release) -> None:
         self._record_check(release.version)
-        if release.version == self.settings.skipped_update_version:
+        if release.version in (self.settings.skipped_update_version, self._offered_update):
             return
+        self._offered_update = release.version
         offer_update(None, self.settings, release)
 
     def _on_update_none(self) -> None:
@@ -390,7 +418,8 @@ class MusicControlApp:
         elif hint == "source":
             self.controller.set_source(self.settings.source_mode, self.settings.pinned_source)
         elif hint == "visibility":
-            if not self.settings.hide_when_no_music and not self.widget.isVisible():
+            if not self.settings.hide_when_no_music and self._auto_hidden:
+                self._auto_hidden = False
                 self.widget.show()
         self.widget.update()
         self._refresh_menu()

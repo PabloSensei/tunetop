@@ -89,6 +89,25 @@ HOTKEY_ACTIONS: tuple[str, ...] = (
 )
 
 
+def _fits(value: object, default: object) -> bool:
+    """Whether a hand-edited `value` has the shape of the field whose default is `default`.
+
+    A wrong type (say, "opacity": "high") would otherwise crash the app on the
+    first use of the field, long after loading looked fine.
+    """
+    if isinstance(default, bool):
+        return isinstance(value, bool)
+    if isinstance(default, float):
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if isinstance(default, dict):
+        return isinstance(value, dict) and all(
+            isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+        )
+    if default is None:  # the optional window position
+        return value is None or (isinstance(value, int) and not isinstance(value, bool))
+    return isinstance(value, type(default))
+
+
 @dataclass
 class Settings:
     # appearance
@@ -133,10 +152,15 @@ class Settings:
             return cls()
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, ValueError):  # ValueError covers bad JSON and bad UTF-8
             return cls()
-        known = {f for f in cls.__dataclass_fields__}
-        data = {k: v for k, v in raw.items() if k in known}
+        if not isinstance(raw, dict):
+            return cls()
+        defaults = cls()
+        data = {
+            k: v for k, v in raw.items()
+            if k in cls.__dataclass_fields__ and _fits(v, getattr(defaults, k))
+        }
         settings = cls(**data)
         # merge in hotkeys added by newer versions
         merged = dict(DEFAULT_HOTKEYS)
