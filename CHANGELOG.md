@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as "Artist - Song (Official Video)" are cleaned up before searching, results
   are cached for the session, and tracks without synced lyrics simply show the
   artist as before.
+- The widget's position is remembered per monitor layout: docking a laptop or
+  plugging in a second screen puts it back where it was on that setup, and
+  unplugging a screen brings it back onto one that's still there.
 
 ### Changed
 

@@ -315,6 +315,44 @@ def test_lyrics() -> None:
     check("nothing within tolerance", pick_result(results[:1], 100.0) == "")
 
 
+def test_positions() -> None:
+    from PySide6.QtCore import QPoint, QRect
+
+    from app.player_widget import PlayerWidget, parse_position, screen_signature
+
+    laptop = [QRect(0, 0, 1920, 1080)]
+    docked = [QRect(1920, 0, 2560, 1440), QRect(0, 0, 1920, 1080)]
+    check("layout signature sorted", screen_signature(docked)
+          == "1920x1080@0,0|2560x1440@1920,0", screen_signature(docked))
+    check("layouts differ", screen_signature(laptop) != screen_signature(docked))
+    check("position parsed", parse_position("-5,120") == QPoint(-5, 120))
+    check("bad positions rejected", parse_position("") is None and parse_position("1,2,3") is None
+          and parse_position(None) is None)
+
+    settings = Settings()
+    widget = PlayerWidget(settings)
+    layout = widget._layout()
+    widget.move(30, 40)
+    widget.save_position()
+    check("position stored per layout", settings.positions.get(layout) == "30,40",
+          settings.positions)
+    settings.positions["640x480@0,0"] = "1,1"
+    for index in range(20):
+        settings.positions[f"{index}x1@0,0"] = "1,1"
+    widget.save_position()
+    check("layout history capped", len(settings.positions) <= 12
+          and next(reversed(settings.positions)) == layout, list(settings.positions)[-1])
+    settings.pos_x, settings.pos_y = 9999, 9999  # stale "last used", off every screen
+    widget.move(0, 0)
+    widget.restore_position()
+    check("layout position wins over the last used one", (widget.x(), widget.y()) == (30, 40),
+          (widget.x(), widget.y()))
+    settings.positions.clear()
+    widget.restore_position()
+    check("off-screen fallback lands on a screen", widget.x() < 9999 and widget.y() < 9999)
+    widget.deleteLater()
+
+
 def test_app_icon() -> None:
     for size in (16, 32, 256):
         image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
@@ -403,6 +441,7 @@ def main() -> int:
     test_playback_modes()
     test_autostart_command()
     test_lyrics()
+    test_positions()
     test_sources()
     test_locales()
     print()
