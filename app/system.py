@@ -82,6 +82,42 @@ def migrate_legacy_autostart() -> bool:
         return False
 
 
+def command_target(command: str) -> str:
+    """The executable a Run-key command line starts: '"C:\\x\\a.exe" arg' -> 'C:\\x\\a.exe'."""
+    command = command.strip()
+    if command.startswith('"'):
+        end = command.find('"', 1)
+        return command[1:end] if end > 0 else command[1:]
+    return command.split(" ", 1)[0]
+
+
+def repair_autostart() -> bool:
+    """Point an autostart entry whose program no longer exists at this exe.
+
+    A portable exe that was moved, or an install that was removed and put
+    somewhere else, would otherwise leave Windows trying to start a missing
+    file at every logon. Only the frozen build does this, and only for a dead
+    path, so running from source never hijacks a working installed entry.
+    Returns True if the entry was rewritten.
+    """
+    if not getattr(sys, "frozen", False):
+        return False
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY, 0,
+                            winreg.KEY_SET_VALUE | winreg.KEY_QUERY_VALUE) as key:
+            try:
+                value, _ = winreg.QueryValueEx(key, RUN_VALUE)
+            except FileNotFoundError:
+                return False
+            target = command_target(str(value))
+            if target and Path(target).exists():
+                return False
+            winreg.SetValueEx(key, RUN_VALUE, 0, winreg.REG_SZ, _launch_command())
+            return True
+    except OSError:
+        return False
+
+
 def _tap(vk: int) -> None:
     user32.keybd_event(vk, 0, 0, 0)
     user32.keybd_event(vk, 0, KEYEVENTF_KEYUP, 0)

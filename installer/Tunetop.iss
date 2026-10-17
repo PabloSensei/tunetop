@@ -68,6 +68,12 @@ Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: no
 ; Silent update started by Tunetop itself (/restartapp=1): bring it back up.
 Filename: "{app}\{#MyAppExeName}"; Flags: nowait; Check: RestartRequested
 
+[Registry]
+; Tunetop writes its own autostart value when the user ticks the option; don't
+; leave it pointing at a deleted exe after uninstalling. Nothing is written at
+; install time (no ValueType), the flags only act on uninstall.
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: "Tunetop"; Flags: dontcreatekey uninsdeletevalue
+
 [UninstallDelete]
 ; Settings/skins/locales under %APPDATA%\Tunetop are left in place on purpose
 ; (matches most Windows apps) — only the install folder itself is removed.
