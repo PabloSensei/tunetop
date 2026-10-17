@@ -168,15 +168,19 @@ class SettingsDialog(QDialog):
         self.cb_remember.toggled.connect(lambda v: self._set("remember_position", v, ""))
 
         self.cb_compact = QCheckBox(tr("settings.compact"))
-        self.cb_compact.setChecked(self.settings.compact)
-        self.cb_compact.toggled.connect(lambda v: self._set("compact", v, "skin"))
+        self.cb_compact.setChecked(self.settings.compact and not self.settings.cover_mode)
+        self.cb_compact.toggled.connect(lambda v: self._on_view("compact", v))
+
+        self.cb_cover = QCheckBox(tr("settings.cover_mode"))
+        self.cb_cover.setChecked(self.settings.cover_mode)
+        self.cb_cover.toggled.connect(lambda v: self._on_view("cover_mode", v))
 
         self.cb_hide_idle = QCheckBox(tr("settings.hide_when_no_music"))
         self.cb_hide_idle.setChecked(self.settings.hide_when_no_music)
         self.cb_hide_idle.toggled.connect(lambda v: self._set("hide_when_no_music", v, "visibility"))
 
         for widget in (self.cb_on_top, self.cb_lock, self.cb_snap, self.cb_remember,
-                       self.cb_compact, self.cb_hide_idle):
+                       self.cb_compact, self.cb_cover, self.cb_hide_idle):
             window_form.addWidget(widget)
 
         opacity_row = QHBoxLayout()
@@ -268,6 +272,16 @@ class SettingsDialog(QDialog):
         layout.addWidget(language_box)
         layout.addStretch(1)
         return page
+
+    def _on_view(self, field: str, value: bool) -> None:
+        """Compact and cover-only are alternatives: ticking one clears the other."""
+        other = self.cb_cover if field == "compact" else self.cb_compact
+        if value and other.isChecked():
+            other.blockSignals(True)
+            other.setChecked(False)
+            other.blockSignals(False)
+            setattr(self.settings, "cover_mode" if field == "compact" else "compact", False)
+        self._set(field, value, "skin")
 
     def _on_opacity(self, value: int) -> None:
         self.lb_opacity.setText(f"{value}%")

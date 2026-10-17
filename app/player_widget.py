@@ -176,7 +176,7 @@ class PlayerWidget(QWidget):
         self._art_key = ""
         self._art_pixmap = None
         self._set_ambient(None, fade=False)
-        width, height = self.skin.size(self.settings.compact)
+        width, height = self._card_size()
         margin = self.skin.metric("shadow")
         self.setFixedSize(QSize(width + margin * 2, height + margin * 2))
         self._relayout()
@@ -192,14 +192,42 @@ class PlayerWidget(QWidget):
 
     def set_compact(self, compact: bool) -> None:
         self.settings.compact = compact
+        self.settings.cover_mode = False
         self.apply_skin(self.skin.id)
+
+    def set_cover_mode(self, cover: bool) -> None:
+        self.settings.cover_mode = cover
+        self.apply_skin(self.skin.id)
+
+    def cycle_view(self) -> None:
+        """Double click: full -> compact -> cover only -> full."""
+        if self.settings.cover_mode:
+            self.settings.cover_mode = False
+            self.settings.compact = False
+        elif self.settings.compact:
+            self.settings.cover_mode = True
+        else:
+            self.settings.compact = True
+        self.apply_skin(self.skin.id)
+
+    def _cover(self) -> bool:
+        return self.settings.cover_mode
+
+    def _card_size(self) -> tuple[int, int]:
+        if self._cover():
+            side = max(64, min(400, self.skin.metric("cover_size")))
+            return side, side
+        return self.skin.size(self.settings.compact)
 
     # ------------------------------------------------------------- geometry
 
     def _relayout(self) -> None:
         margin = self.skin.metric("shadow")
-        card_w, card_h = self.skin.size(self.settings.compact)
+        card_w, card_h = self._card_size()
         self._card = QRectF(margin, margin, card_w, card_h)
+        if self._cover():
+            self._relayout_cover()
+            return
 
         pad = self.skin.metric("padding")
         gap = self.skin.metric("spacing")
@@ -288,6 +316,33 @@ class PlayerWidget(QWidget):
                 QRectF(text_left, y, text_w, prog_h) if self.settings.show_progress else QRectF()
             )
 
+        self._buttons = buttons
+        self._sync_button_state()
+
+    def _relayout_cover(self) -> None:
+        """Cover only: the art fills the card; buttons appear over it on hover."""
+        card = self._card
+        btn = min(self.skin.metric("button_size"), int(card.width() / 3.6))
+        btn_gap = max(2, min(self.skin.metric("button_gap"), int(card.width() / 20)))
+        buttons: list[HitButton] = []
+        chrome = 12
+        chrome_x = card.right() - 6 - chrome
+        for name, action in (("close", "quit"), ("minimize", "hide"), ("gear", "settings")):
+            buttons.append(HitButton(name, action,
+                                     QRectF(chrome_x, card.top() + 6, chrome, chrome), True, "chrome"))
+            chrome_x -= chrome + 4
+        x = card.center().x() - (3 * btn + 2 * btn_gap) / 2
+        y = card.center().y() - btn / 2 + 4
+        for name, action in (("prev", "prev_track"), ("play", "play_pause"), ("next", "next_track")):
+            buttons.append(HitButton(name, action, QRectF(x, y, btn, btn)))
+            x += btn + btn_gap
+        self._art_rect = QRectF(card)
+        self._title_rect = QRectF()
+        self._artist_rect = QRectF()
+        self._time_rect = QRectF()
+        prog_h = self.skin.metric("progress_height")
+        self._progress_rect = (QRectF(card.left(), card.bottom() - prog_h, card.width(), prog_h)
+                               if self.settings.show_progress else QRectF())
         self._buttons = buttons
         self._sync_button_state()
 
@@ -409,6 +464,8 @@ class PlayerWidget(QWidget):
 
         if not self._art_rect.isEmpty():
             self._paint_art(painter)
+        if self._cover() and self._hovered:
+            painter.fillPath(card_path, QColor(0, 0, 0, 120))  # so the buttons read on any cover
         self._paint_text(painter)
         if not self._progress_rect.isEmpty():
             painter.save()
@@ -416,7 +473,26 @@ class PlayerWidget(QWidget):
             self._paint_progress(painter)
             painter.restore()
         self._paint_buttons(painter)
+        if self._cover():
+            self._paint_cover_osd(painter)
         painter.end()
+
+    def _paint_cover_osd(self, painter: QPainter) -> None:
+        """Cover mode has no text slots, so the volume level gets a pill at the bottom."""
+        osd = self._osd()
+        if not osd:
+            return
+        painter.setFont(self.skin.font("time"))
+        metrics = QFontMetricsF(painter.font())
+        width = min(self._card.width() - 12, metrics.horizontalAdvance(osd) + 14)
+        height = metrics.height() + 6
+        pill = QRectF(self._card.center().x() - width / 2, self._card.bottom() - height - 10,
+                      width, height)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(0, 0, 0, 170))
+        painter.drawRoundedRect(pill, height / 2, height / 2)
+        painter.setPen(QColor("#ffffff"))
+        painter.drawText(pill, int(Qt.AlignmentFlag.AlignCenter), osd)
 
     def _paint_shadow(self, painter: QPainter, radius: float) -> None:
         blur = self.skin.metric("shadow")
@@ -443,7 +519,7 @@ class PlayerWidget(QWidget):
         painter.restore()
 
     def _paint_art(self, painter: QPainter) -> None:
-        radius = float(self.skin.metric("art_radius"))
+        radius = float(self.skin.metric("radius" if self._cover() else "art_radius"))
         path = QPainterPath()
         path.addRoundedRect(self._art_rect, radius, radius)
         painter.save()
@@ -553,6 +629,8 @@ class PlayerWidget(QWidget):
                 continue
             if button.role == "mode" and not button.enabled:
                 continue  # the player can't do it; an inert icon would only confuse
+            if self._cover() and not self._hovered:
+                continue  # the cover itself is the point of this mode
             hovered = button is self._hover
             if button.role == "mode":
                 active = (self.state.shuffle if button.action == "shuffle"
@@ -573,6 +651,8 @@ class PlayerWidget(QWidget):
             else:
                 color = self.skin.color("icon_hover" if hovered else "icon")
                 scale = 0.62
+            if self._cover() and button.role == "transport":
+                color = QColor(255, 255, 255, 255 if hovered else 225 if button.enabled else 110)
             if hovered and button.enabled and button.role in ("transport", "mode"):
                 bg = self.skin.color("icon_bg_hover")
                 if bg.alpha():
@@ -675,7 +755,7 @@ class PlayerWidget(QWidget):
             return
         if self._seekable_at(pos):
             return  # a fast double seek is not a request for compact mode
-        self.set_compact(not self.settings.compact)
+        self.cycle_view()
         self.settings.save()
 
     def wheelEvent(self, event) -> None:  # noqa: N802

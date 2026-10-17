@@ -115,6 +115,7 @@ class Settings:
     skin: str = "dark"
     opacity: float = 1.0
     compact: bool = False
+    cover_mode: bool = False  # album art only, controls on hover; wins over `compact`
     show_album_art: bool = True
     art_background: bool = False  # tint the card with colours taken from the album art
     show_progress: bool = True

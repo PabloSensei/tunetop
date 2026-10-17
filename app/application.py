@@ -230,9 +230,15 @@ class MusicControlApp:
 
         compact = QAction(tr("menu.compact"), menu)
         compact.setCheckable(True)
-        compact.setChecked(self.settings.compact)
+        compact.setChecked(self.settings.compact and not self.settings.cover_mode)
         compact.triggered.connect(self._toggle_compact)
         menu.addAction(compact)
+
+        cover = QAction(tr("menu.cover_mode"), menu)
+        cover.setCheckable(True)
+        cover.setChecked(self.settings.cover_mode)
+        cover.triggered.connect(self._toggle_cover)
+        menu.addAction(cover)
 
         on_top = QAction(tr("menu.always_on_top"), menu)
         on_top.setCheckable(True)
@@ -314,6 +320,10 @@ class MusicControlApp:
 
     def _toggle_compact(self, checked: bool) -> None:
         self.widget.set_compact(checked)
+        self.settings.save()
+
+    def _toggle_cover(self, checked: bool) -> None:
+        self.widget.set_cover_mode(checked)
         self.settings.save()
 
     def _toggle_on_top(self, checked: bool) -> None:

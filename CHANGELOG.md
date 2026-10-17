@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by the active skin, appears for four seconds when the track changes — off by
   default, or only while the widget is hidden, or always (then next to the
   widget). Clicking it brings the widget up.
+- "Cover only" view: a square card with just the album art; the controls, a
+  dimming overlay and the window buttons appear on hover, and the volume level
+  shows as a pill over the cover. Double-clicking the widget now cycles full →
+  compact → cover only. The square's size is the skins' new `cover_size` key.
 
 ### Changed
 
