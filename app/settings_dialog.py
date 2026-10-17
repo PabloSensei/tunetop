@@ -19,7 +19,7 @@ from .hotkeys import MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN, format_hotkey, pa
 from .i18n import available_languages, language_name, resolve_language, tr
 from .media import friendly_source_name
 from .skins import available_skins, load_skin
-from .updates import UpdateChecker, check_stamp, offer_update
+from .updates import UpdateChecker, check_stamp, installed_build, offer_update
 from . import system
 
 FUNCTION_KEYS = set(range(0x70, 0x88))  # F1..F24
@@ -96,6 +96,7 @@ class SettingsDialog(QDialog):
     """Live settings editor. `applied` carries a hint about what changed."""
 
     applied = Signal(str)
+    install_requested = Signal(object)  # ReleaseInfo the user chose to install now
 
     def __init__(self, settings: Settings, controller, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -489,6 +490,13 @@ class SettingsDialog(QDialog):
         self.cb_check_updates.setChecked(self.settings.check_for_updates)
         self.cb_check_updates.toggled.connect(lambda v: self._set("check_for_updates", v, ""))
         update_layout.addWidget(self.cb_check_updates)
+        self.cb_auto_install = QCheckBox(tr("settings.auto_install_updates"))
+        self.cb_auto_install.setChecked(self.settings.auto_install_updates)
+        self.cb_auto_install.toggled.connect(lambda v: self._set("auto_install_updates", v, ""))
+        update_layout.addWidget(self.cb_auto_install)
+        if not installed_build():
+            self.cb_auto_install.setEnabled(False)
+            update_layout.addWidget(hint_label(tr("settings.auto_install_unavailable")))
 
         check_row = QHBoxLayout()
         check_button = QPushButton(tr("settings.check_updates_now"))
@@ -516,7 +524,8 @@ class SettingsDialog(QDialog):
     def _on_manual_update_available(self, release) -> None:
         self.lb_update_status.setText("")
         self._record_check(release.version)
-        offer_update(self, self.settings, release)
+        if offer_update(self, self.settings, release):
+            self.install_requested.emit(release)
 
     def _on_manual_update_up_to_date(self) -> None:
         from . import __version__

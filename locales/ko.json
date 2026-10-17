@@ -87,6 +87,8 @@
 
   "settings.group.updates": "업데이트",
   "settings.check_updates": "자동으로 업데이트 확인",
+  "settings.auto_install_updates": "업데이트 자동 설치",
+  "settings.auto_install_unavailable": "자동 설치는 설치된 버전에서만 동작합니다. 포터블 exe는 대신 다운로드 페이지를 엽니다.",
   "settings.check_updates_now": "지금 업데이트 확인",
 
   "update.checking": "확인 중…",
@@ -97,6 +99,14 @@
   "update.download": "다운로드",
   "update.skip": "이 버전 건너뛰기",
   "update.later": "나중에",
+  "update.available_install": "Tunetop {version}을(를) 사용할 수 있습니다 — 현재 {current}.\n\n지금 설치할까요? Tunetop이 다시 시작됩니다.",
+  "update.install": "지금 업데이트",
+  "update.downloading": "Tunetop {version} 다운로드 중…",
+  "update.installing": "Tunetop {version} 설치 중 — 곧 다시 시작됩니다.",
+  "update.cancel": "취소",
+  "update.download_failed": "업데이트를 설치하지 못했습니다: {error}\n\n대신 다운로드 페이지를 열까요?",
+  "update.no_installer": "이 릴리스에는 다운로드할 설치 프로그램이 없습니다",
+  "update.checksum_mismatch": "다운로드한 파일이 손상되었습니다 (체크섬 불일치)",
 
   "about.tagline": "항상 위에 표시되는 작은 음악 제어 위젯입니다.",
   "about.mouse": "마우스 조작:",

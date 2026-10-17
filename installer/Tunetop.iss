@@ -40,6 +40,10 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+; The in-app updater runs this installer silently while Tunetop is still up:
+; close it rather than fail on the locked exe, and let [Run] restart it.
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -61,8 +65,16 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
+; Silent update started by Tunetop itself (/restartapp=1): bring it back up.
+Filename: "{app}\{#MyAppExeName}"; Flags: nowait; Check: RestartRequested
 
 [UninstallDelete]
 ; Settings/skins/locales under %APPDATA%\Tunetop are left in place on purpose
 ; (matches most Windows apps) — only the install folder itself is removed.
 Type: filesandordirs; Name: "{app}"
+
+[Code]
+function RestartRequested: Boolean;
+begin
+  Result := ExpandConstant('{param:restartapp|0}') = '1';
+end;

@@ -87,6 +87,8 @@
 
   "settings.group.updates": "Оновлення",
   "settings.check_updates": "Автоматично перевіряти оновлення",
+  "settings.auto_install_updates": "Встановлювати оновлення автоматично",
+  "settings.auto_install_unavailable": "Автовстановлення працює лише у встановленій версії; портативний exe натомість відкриває сторінку завантаження.",
   "settings.check_updates_now": "Перевірити оновлення зараз",
 
   "update.checking": "Перевірка…",
@@ -97,6 +99,14 @@
   "update.download": "Завантажити",
   "update.skip": "Пропустити цю версію",
   "update.later": "Пізніше",
+  "update.available_install": "Доступна версія Tunetop {version} — у вас {current}.\n\nВстановити зараз? Tunetop перезапуститься.",
+  "update.install": "Оновити",
+  "update.downloading": "Завантаження Tunetop {version}…",
+  "update.installing": "Встановлюється Tunetop {version} — він зараз перезапуститься.",
+  "update.cancel": "Скасувати",
+  "update.download_failed": "Не вдалося встановити оновлення: {error}\n\nВідкрити сторінку завантаження?",
+  "update.no_installer": "у цього релізу немає інсталятора для завантаження",
+  "update.checksum_mismatch": "завантажений файл пошкоджено (контрольна сума не збігається)",
 
   "about.tagline": "Маленький віджет керування музикою поверх усіх вікон.",
   "about.mouse": "Керування мишею:",

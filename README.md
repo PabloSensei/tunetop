@@ -35,6 +35,8 @@ plugins required.
 - **Source picker** — follow the current Windows player, or pin one specific app
 - **Compact mode** — a slim bar with just the buttons (double-click the widget)
 - **Start with Windows**, start minimized to tray, opacity, position lock
+- **Updates** — the installed version downloads, verifies and installs new releases
+  itself (on request, or automatically); the portable exe points to the download page
 - Single instance: launching it again just shows the running widget
 
 ## Install

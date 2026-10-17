@@ -87,6 +87,8 @@
 
   "settings.group.updates": "Aktualizacje",
   "settings.check_updates": "Automatycznie sprawdzaj aktualizacje",
+  "settings.auto_install_updates": "Instaluj aktualizacje automatycznie",
+  "settings.auto_install_unavailable": "Automatyczna instalacja wymaga wersji zainstalowanej; przenośny exe otwiera zamiast tego stronę pobierania.",
   "settings.check_updates_now": "Sprawdź aktualizacje teraz",
 
   "update.checking": "Sprawdzanie…",
@@ -97,6 +99,14 @@
   "update.download": "Pobierz",
   "update.skip": "Pomiń tę wersję",
   "update.later": "Później",
+  "update.available_install": "Dostępny jest Tunetop {version} — masz {current}.\n\nZainstalować teraz? Tunetop uruchomi się ponownie.",
+  "update.install": "Aktualizuj teraz",
+  "update.downloading": "Pobieranie Tunetop {version}…",
+  "update.installing": "Instalowanie Tunetop {version} — za chwilę uruchomi się ponownie.",
+  "update.cancel": "Anuluj",
+  "update.download_failed": "Nie udało się zainstalować aktualizacji: {error}\n\nOtworzyć stronę pobierania?",
+  "update.no_installer": "to wydanie nie ma instalatora do pobrania",
+  "update.checksum_mismatch": "pobrany plik jest uszkodzony (niezgodna suma kontrolna)",
 
   "about.tagline": "Mały widżet do sterowania muzyką, zawsze na wierzchu.",
   "about.mouse": "Obsługa myszą:",

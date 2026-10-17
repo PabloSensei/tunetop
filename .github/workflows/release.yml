@@ -63,6 +63,15 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=${{ steps.version.outputs.value }}" installer\Tunetop.iss
 
+      - name: Checksum installer
+        shell: pwsh
+        run: |
+          # The in-app updater refuses an installer whose SHA-256 doesn't match this file.
+          Get-ChildItem dist\TunetopSetup-*.exe | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            Set-Content -Path "$($_.FullName).sha256" -Value "$hash  $($_.Name)" -Encoding ascii -NoNewline
+          }
+
       - name: Package
         run: |
           mkdir release
@@ -79,6 +88,7 @@ jobs:
           path: |
             dist/Tunetop.exe
             dist/TunetopSetup-*.exe
+            dist/TunetopSetup-*.exe.sha256
             Tunetop-*.zip
 
       - name: Publish release
@@ -90,4 +100,5 @@ jobs:
           files: |
             dist/Tunetop.exe
             dist/TunetopSetup-*.exe
+            dist/TunetopSetup-*.exe.sha256
             Tunetop-*.zip
