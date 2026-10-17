@@ -24,7 +24,11 @@ import app.config as config  # noqa: E402
 _SANDBOX = Path(tempfile.mkdtemp(prefix="atm-tests-"))
 config.config_dir = lambda: _SANDBOX  # keep the real settings file untouched
 
+from PySide6.QtCore import QRectF  # noqa: E402
+from PySide6.QtGui import QColor, QImage, QPainter  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
+
+from app import icons, skins  # noqa: E402
 
 from app.config import HOTKEY_ACTIONS, Settings  # noqa: E402
 from app.hotkeys import format_hotkey, parse_hotkey  # noqa: E402
@@ -68,6 +72,22 @@ def test_settings() -> None:
 
     (_SANDBOX / "settings.json").write_text("{ not json at all", encoding="utf-8")
     check("corrupt settings fall back to defaults", Settings.load().skin == "dark")
+
+    (_SANDBOX / "settings.json").write_bytes(b'{"skin": "\xff\xfe"}')
+    check("non-UTF-8 settings fall back to defaults", Settings.load().skin == "dark")
+    (_SANDBOX / "settings.json").write_text("[1, 2, 3]", encoding="utf-8")
+    check("non-object settings fall back to defaults", Settings.load().skin == "dark")
+
+    (_SANDBOX / "settings.json").write_text(json.dumps({
+        "skin": "neon", "opacity": "high", "compact": "yes", "hotkeys": "Ctrl+M",
+        "pos_x": 10, "pos_y": None, "always_on_top": 0,
+    }), encoding="utf-8")
+    loaded = Settings.load()
+    check("mistyped values dropped, good ones kept", loaded.skin == "neon" and loaded.pos_x == 10)
+    check("mistyped opacity falls back", loaded.opacity == 1.0, loaded.opacity)
+    check("mistyped bool falls back", loaded.compact is False and loaded.always_on_top is True)
+    check("mistyped hotkeys fall back", loaded.hotkeys.get("play_pause") == "Ctrl+Alt+P",
+          loaded.hotkeys)
 
 
 def test_legacy_migration() -> None:
@@ -115,6 +135,28 @@ def test_skins() -> None:
             return
     check("every default colour resolves", True)
 
+    broken_root = Path(tempfile.mkdtemp(prefix="atm-skins-"))
+    (broken_root / "broken").mkdir()
+    (broken_root / "broken" / "skin.json").write_text(json.dumps({
+        "extends": ["dark"], "colors": "red",
+        "fonts": {"title": {"size": "big", "letter_spacing": "wide"}, "artist": 7},
+        "icons": ["play.png"],
+    }), encoding="utf-8")
+    (broken_root / "binary").mkdir()
+    (broken_root / "binary" / "skin.json").write_bytes(b"\xff\xfe\x00garbage")
+    original_dir = skins.user_skins_dir
+    skins.user_skins_dir = lambda: broken_root
+    try:
+        broken = load_skin("broken")
+        check("broken skin still loads", broken.id == "broken")
+        check("broken skin colours fall back", broken.color("title").isValid())
+        check("broken skin fonts fall back", broken.font("title").pointSizeF() > 0
+              and broken.font("artist").pointSizeF() > 0)
+        check("broken skin icons ignored", broken.icon_pixmap("play") is None)
+        check("undecodable manifest falls back", load_skin("binary").size() == dark.size())
+    finally:
+        skins.user_skins_dir = original_dir
+
 
 def test_hotkeys() -> None:
     cases = [
@@ -130,6 +172,22 @@ def test_hotkeys() -> None:
     check("parse junk", parse_hotkey("Ctrl+Nonsense") is None)
     check("format round trip", format_hotkey(3, 0x4D) == "Ctrl+Alt+M", format_hotkey(3, 0x4D))
     check("format arrows", format_hotkey(3, 0x27) == "Ctrl+Alt+Right", format_hotkey(3, 0x27))
+    for vk in (0x6B, 0x6D, 0xE2, 0xB3, 0x70):
+        text = format_hotkey(3, vk)
+        check(f"round trip {text}", parse_hotkey(text) == (3, vk), parse_hotkey(text))
+
+
+def test_app_icon() -> None:
+    for size in (16, 32, 256):
+        image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
+        image.fill(0)
+        painter = QPainter(image)
+        icons.paint_app_icon(painter, QRectF(0, 0, size, size), QColor("#6c8cff"))
+        painter.end()
+        centre = image.pixelColor(size // 2, size // 2)
+        corner = image.pixelColor(0, 0)
+        check(f"app icon {size}px drawn", centre.alpha() == 255 and corner.alpha() < 64,
+              (centre.name(), corner.alpha()))
 
 
 def test_sources() -> None:
@@ -200,6 +258,7 @@ def main() -> int:
     test_legacy_migration()
     test_skins()
     test_hotkeys()
+    test_app_icon()
     test_sources()
     test_locales()
     print()

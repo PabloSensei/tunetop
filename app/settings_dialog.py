@@ -244,6 +244,9 @@ class SettingsDialog(QDialog):
 
     def _on_autostart(self, value: bool) -> None:
         if not system.set_autostart(value):
+            self.cb_autostart.blockSignals(True)
+            self.cb_autostart.setChecked(not value)  # show what is actually in effect
+            self.cb_autostart.blockSignals(False)
             QMessageBox.warning(self, tr("settings.autostart_failed_title"),
                                 tr("settings.autostart_failed"))
             return
@@ -292,7 +295,12 @@ class SettingsDialog(QDialog):
     def _on_hotkey(self, action: str, text: str, clear: bool = False) -> None:
         if clear:
             self._hotkey_edits[action].setText("")
+        self.lb_hotkey_status.setText("")
         if text:
+            # Reject first: an unusable combo must not cost another action its key.
+            if parse_hotkey(text) is None:
+                self.lb_hotkey_status.setText(tr("settings.hotkey_unsupported", hotkey=text))
+                return
             for other, value in self.settings.hotkeys.items():
                 if other != action and value and value.lower() == text.lower():
                     self.lb_hotkey_status.setText(tr(
@@ -301,9 +309,6 @@ class SettingsDialog(QDialog):
                     self.settings.hotkeys[other] = ""
                     if other in self._hotkey_edits:
                         self._hotkey_edits[other].setText("")
-            if parse_hotkey(text) is None:
-                self.lb_hotkey_status.setText(tr("settings.hotkey_unsupported", hotkey=text))
-                return
         self.settings.hotkeys[action] = text
         self.settings.save()
         self.applied.emit("hotkeys_preview")

@@ -43,7 +43,7 @@ NAME_TO_VK: dict[str, int] = {
     "numlock": 0x90, "scrolllock": 0x91, "capslock": 0x14,
     "num0": 0x60, "num1": 0x61, "num2": 0x62, "num3": 0x63, "num4": 0x64,
     "num5": 0x65, "num6": 0x66, "num7": 0x67, "num8": 0x68, "num9": 0x69,
-    "num*": 0x6A, "num+": 0x6B, "num-": 0x6D, "num.": 0x6E, "num/": 0x6F,
+    "num*": 0x6A, "num+": 0x6B, "numplus": 0x6B, "num-": 0x6D, "num.": 0x6E, "num/": 0x6F,
     ";": 0xBA, "=": 0xBB, ",": 0xBC, "-": 0xBD, ".": 0xBE, "/": 0xBF,
     "`": 0xC0, "[": 0xDB, "\\": 0xDC, "]": 0xDD, "'": 0xDE,
     "media play": 0xB3, "media next": 0xB0, "media prev": 0xB1, "media stop": 0xB2,
@@ -60,7 +60,9 @@ VK_TO_NAME: dict[int, str] = {}
 for _name, _vk in NAME_TO_VK.items():
     VK_TO_NAME.setdefault(_vk, _name.title() if len(_name) > 1 else _name.upper())
 VK_TO_NAME.update({0x0D: "Enter", 0x1B: "Esc", 0x2E: "Del", 0x2D: "Ins", 0x21: "PgUp",
-                   0x22: "PgDown", 0x20: "Space", 0x09: "Tab", 0x08: "Backspace"})
+                   0x22: "PgDown", 0x20: "Space", 0x09: "Tab", 0x08: "Backspace",
+                   # "Num+" would be split apart as a "+" separator when read back
+                   0x6B: "NumPlus"})
 
 
 def parse_hotkey(text: str) -> tuple[int, int] | None:
@@ -84,6 +86,13 @@ def parse_hotkey(text: str) -> tuple[int, int] | None:
     vk = NAME_TO_VK.get(key.lower())
     if vk is None and len(key) == 1:
         vk = ord(key.upper())
+    if vk is None and key.lower().startswith("vk"):  # keys format_hotkey has no name for
+        try:
+            vk = int(key[2:], 16)
+        except ValueError:
+            vk = None
+        if vk is not None and not 0 < vk < 0xFF:
+            vk = None
     if vk is None:
         return None
     return mods, vk

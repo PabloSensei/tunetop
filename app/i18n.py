@@ -40,7 +40,7 @@ def locale_files() -> dict[str, Path]:
 def _read(path: Path) -> dict:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, ValueError):  # ValueError covers bad JSON and bad UTF-8
         return {}
     return data if isinstance(data, dict) else {}
 
@@ -102,6 +102,8 @@ class Translator:
         if not self._loaded:
             self.set_language(self._requested)
         text = self._strings.get(key) or self._fallback.get(key) or key
+        if not isinstance(text, str):  # a hand-edited file with a non-string value
+            text = key
         if kwargs:
             try:
                 return text.format(**kwargs)

@@ -265,14 +265,19 @@ class MediaController(QObject):
             ("current", self._manager.add_current_session_changed(self._on_manager_event)),
         ]
 
-        await self._rebind()
         while not self._stopping:
+            try:
+                # A session that vanishes mid-read (player closed) raises from
+                # unguarded property reads; that must cost one poll, not the
+                # whole media thread.
+                await self._rebind()
+            except Exception:
+                pass
             try:
                 await asyncio.wait_for(self._wake.wait(), timeout=1.0)
                 self._wake.clear()
-                await self._rebind()
             except asyncio.TimeoutError:
-                await self._rebind(events_only=False)
+                pass  # safety-net poll for players that fire no events
 
     def _wake_loop(self) -> None:
         loop, wake = self._loop, self._wake
@@ -318,7 +323,7 @@ class MediaController(QObject):
             return None
         return current
 
-    async def _rebind(self, events_only: bool = True) -> None:
+    async def _rebind(self) -> None:
         if self._manager is None:
             return
         try:
@@ -535,7 +540,11 @@ class MediaController(QObject):
             elif action == "seek" and value is not None:
                 await session.try_change_playback_position_async(int(value * 10_000_000))
                 self._reset_position()  # take the player's word for it after a seek
+            else:
+                return
         except Exception:
             return
+        # Don't publish from here: the poll loop may be inside _publish already,
+        # and two interleaved runs corrupt the position/artwork bookkeeping.
         await asyncio.sleep(0.15)
-        await self._publish()
+        self._wake_loop()
