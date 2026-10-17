@@ -4,6 +4,7 @@
   "widget.no_player": "Nessun player attivo",
   "widget.start_music": "avvia della musica",
   "widget.no_track_data": "nessun dato sul brano",
+  "widget.volume": "Volume {percent}%",
 
   "menu.show_widget": "Mostra il widget",
   "menu.hide_widget": "Nascondi il widget",
@@ -52,7 +53,10 @@
   "settings.show_art": "Mostra la copertina",
   "settings.show_progress": "Mostra l’avanzamento (clic per spostarsi)",
   "settings.scroll_titles": "Scorri i titoli lunghi",
-  "settings.wheel_volume": "La rotellina sul widget regola il volume di sistema",
+  "settings.wheel_volume": "La rotellina sul widget regola il volume",
+  "settings.volume_target": "Rotellina e scorciatoie del volume regolano:",
+  "settings.volume_app": "il volume del lettore",
+  "settings.volume_system": "il volume di sistema",
 
   "settings.group.startup": "Avvio",
   "settings.autostart": "Avvia con Windows",
@@ -113,7 +117,7 @@
   "about.drag": "trascina una zona vuota — sposta il widget",
   "about.double_click": "doppio clic — modalità compatta",
   "about.middle_click": "tasto centrale — riproduci/pausa",
-  "about.wheel": "rotellina — volume di sistema",
+  "about.wheel": "rotellina — volume",
   "about.right_click": "tasto destro — menu",
   "about.files": "File:",
   "about.files_text": "impostazioni, skin e traduzioni si trovano in",

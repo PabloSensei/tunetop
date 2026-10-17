@@ -4,6 +4,7 @@
   "widget.no_player": "Sin reproductor activo",
   "widget.start_music": "pon algo de música",
   "widget.no_track_data": "sin datos de la pista",
+  "widget.volume": "Volumen {percent} %",
 
   "menu.show_widget": "Mostrar el widget",
   "menu.hide_widget": "Ocultar el widget",
@@ -52,7 +53,10 @@
   "settings.show_art": "Mostrar la carátula",
   "settings.show_progress": "Mostrar el progreso (clic para avanzar)",
   "settings.scroll_titles": "Desplazar los títulos largos",
-  "settings.wheel_volume": "La rueda del ratón sobre el widget cambia el volumen del sistema",
+  "settings.wheel_volume": "La rueda del ratón sobre el widget cambia el volumen",
+  "settings.volume_target": "La rueda y los atajos de volumen cambian:",
+  "settings.volume_app": "el volumen del propio reproductor",
+  "settings.volume_system": "el volumen del sistema",
 
   "settings.group.startup": "Inicio",
   "settings.autostart": "Iniciar con Windows",
@@ -113,7 +117,7 @@
   "about.drag": "arrastrar una zona vacía: mueve el widget",
   "about.double_click": "doble clic: modo compacto",
   "about.middle_click": "botón central: reproducir/pausa",
-  "about.wheel": "rueda: volumen del sistema",
+  "about.wheel": "rueda: volumen",
   "about.right_click": "botón derecho: menú",
   "about.files": "Archivos:",
   "about.files_text": "los ajustes, skins y traducciones están en",

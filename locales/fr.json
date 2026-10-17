@@ -4,6 +4,7 @@
   "widget.no_player": "Aucun lecteur actif",
   "widget.start_music": "lancez de la musique",
   "widget.no_track_data": "aucune info sur le morceau",
+  "widget.volume": "Volume {percent} %",
 
   "menu.show_widget": "Afficher le widget",
   "menu.hide_widget": "Masquer le widget",
@@ -52,7 +53,10 @@
   "settings.show_art": "Afficher la pochette",
   "settings.show_progress": "Afficher la progression (clic pour avancer)",
   "settings.scroll_titles": "Faire défiler les titres longs",
-  "settings.wheel_volume": "La molette sur le widget règle le volume du système",
+  "settings.wheel_volume": "La molette sur le widget règle le volume",
+  "settings.volume_target": "La molette et les raccourcis de volume règlent :",
+  "settings.volume_app": "le volume du lecteur lui-même",
+  "settings.volume_system": "le volume du système",
 
   "settings.group.startup": "Démarrage",
   "settings.autostart": "Lancer avec Windows",
@@ -113,7 +117,7 @@
   "about.drag": "glisser une zone vide — déplacer le widget",
   "about.double_click": "double-clic — mode compact",
   "about.middle_click": "bouton du milieu — lecture/pause",
-  "about.wheel": "molette — volume du système",
+  "about.wheel": "molette — volume",
   "about.right_click": "bouton droit — menu",
   "about.files": "Fichiers :",
   "about.files_text": "les paramètres, thèmes et traductions se trouvent dans",

@@ -4,6 +4,7 @@
   "widget.no_player": "Brak aktywnego odtwarzacza",
   "widget.start_music": "włącz muzykę",
   "widget.no_track_data": "brak danych o utworze",
+  "widget.volume": "Głośność {percent}%",
 
   "menu.show_widget": "Pokaż widżet",
   "menu.hide_widget": "Ukryj widżet",
@@ -52,7 +53,10 @@
   "settings.show_art": "Pokazuj okładkę",
   "settings.show_progress": "Pokazuj postęp utworu (kliknięcie — przewijanie)",
   "settings.scroll_titles": "Przewijaj długie tytuły",
-  "settings.wheel_volume": "Kółko myszy nad widżetem zmienia głośność systemu",
+  "settings.wheel_volume": "Kółko myszy nad widżetem zmienia głośność",
+  "settings.volume_target": "Kółko i skróty głośności zmieniają:",
+  "settings.volume_app": "głośność samego odtwarzacza",
+  "settings.volume_system": "głośność systemu",
 
   "settings.group.startup": "Uruchamianie",
   "settings.autostart": "Uruchamiaj razem z Windows",
@@ -113,7 +117,7 @@
   "about.drag": "przeciąganie za puste miejsce — przesuwa widżet",
   "about.double_click": "dwuklik — tryb kompaktowy",
   "about.middle_click": "środkowy przycisk — odtwarzanie/pauza",
-  "about.wheel": "kółko — głośność systemu",
+  "about.wheel": "kółko — głośność",
   "about.right_click": "prawy przycisk — menu",
   "about.files": "Pliki:",
   "about.files_text": "ustawienia, skórki i tłumaczenia znajdują się w",

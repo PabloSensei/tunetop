@@ -4,6 +4,7 @@
   "widget.no_player": "No active player",
   "widget.start_music": "start playing something",
   "widget.no_track_data": "no track info",
+  "widget.volume": "Volume {percent}%",
 
   "menu.show_widget": "Show widget",
   "menu.hide_widget": "Hide widget",
@@ -52,7 +53,10 @@
   "settings.show_art": "Show album art",
   "settings.show_progress": "Show track progress (click to seek)",
   "settings.scroll_titles": "Scroll long titles",
-  "settings.wheel_volume": "Mouse wheel over the widget changes system volume",
+  "settings.wheel_volume": "Mouse wheel over the widget changes the volume",
+  "settings.volume_target": "Wheel and volume hotkeys change:",
+  "settings.volume_app": "the player's own volume",
+  "settings.volume_system": "the system volume",
 
   "settings.group.startup": "Startup",
   "settings.autostart": "Start with Windows",
@@ -113,7 +117,7 @@
   "about.drag": "drag an empty part of the widget — move it",
   "about.double_click": "double click — compact mode",
   "about.middle_click": "middle button — play/pause",
-  "about.wheel": "wheel — system volume",
+  "about.wheel": "wheel — volume",
   "about.right_click": "right button — menu",
   "about.files": "Files:",
   "about.files_text": "settings, skins and translations live in",

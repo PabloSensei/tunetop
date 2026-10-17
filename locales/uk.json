@@ -4,6 +4,7 @@
   "widget.no_player": "Немає активного плеєра",
   "widget.start_music": "увімкніть музику",
   "widget.no_track_data": "немає даних про трек",
+  "widget.volume": "Гучність {percent}%",
 
   "menu.show_widget": "Показати віджет",
   "menu.hide_widget": "Сховати віджет",
@@ -52,7 +53,10 @@
   "settings.show_art": "Показувати обкладинку",
   "settings.show_progress": "Показувати прогрес треку (клік — перемотування)",
   "settings.scroll_titles": "Прокручувати довгі назви",
-  "settings.wheel_volume": "Коліщатко миші над віджетом змінює гучність системи",
+  "settings.wheel_volume": "Коліщатко миші над віджетом змінює гучність",
+  "settings.volume_target": "Коліщатко та гарячі клавіші гучності змінюють:",
+  "settings.volume_app": "гучність самого плеєра",
+  "settings.volume_system": "гучність системи",
 
   "settings.group.startup": "Запуск",
   "settings.autostart": "Запускати разом із Windows",
@@ -113,7 +117,7 @@
   "about.drag": "перетягування за порожнє місце — рухає віджет",
   "about.double_click": "подвійний клік — компактний режим",
   "about.middle_click": "середня кнопка — відтворення/пауза",
-  "about.wheel": "коліщатко — гучність системи",
+  "about.wheel": "коліщатко — гучність",
   "about.right_click": "права кнопка — меню",
   "about.files": "Файли:",
   "about.files_text": "налаштування, скіни та переклади лежать у",

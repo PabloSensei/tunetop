@@ -207,6 +207,17 @@ class SettingsDialog(QDialog):
         for widget in (self.cb_art, self.cb_progress, self.cb_scroll, self.cb_wheel):
             content_form.addWidget(widget)
 
+        volume_row = QHBoxLayout()
+        volume_row.addWidget(QLabel(tr("settings.volume_target")))
+        self.cmb_volume = QComboBox()
+        self.cmb_volume.addItem(tr("settings.volume_app"), "app")
+        self.cmb_volume.addItem(tr("settings.volume_system"), "system")
+        self.cmb_volume.setCurrentIndex(max(0, self.cmb_volume.findData(self.settings.volume_target)))
+        self.cmb_volume.currentIndexChanged.connect(
+            lambda i: self._set("volume_target", self.cmb_volume.itemData(i) or "app", ""))
+        volume_row.addWidget(self.cmb_volume, 1)
+        content_form.addLayout(volume_row)
+
         start_box = QGroupBox(tr("settings.group.startup"))
         start_form = QVBoxLayout(start_box)
         self.cb_autostart = QCheckBox(tr("settings.autostart"))

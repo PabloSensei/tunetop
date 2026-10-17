@@ -206,6 +206,26 @@ def test_updates() -> None:
     check("newer version compares", is_newer("1.10.0", "1.9.9") and not is_newer("1.2.3", "1.2.3"))
 
 
+def test_audio_matching() -> None:
+    from app.audio import process_matches
+
+    cases = [
+        ("Spotify.exe", r"C:\Users\me\AppData\Roaming\Spotify\Spotify.exe", True),
+        ("SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify", r"C:\Program Files\WindowsApps\Spotify.exe", True),
+        ("Chrome", r"C:\Program Files\Google\Chrome\Application\chrome.exe", True),
+        ("msedge.exe", r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", True),
+        ("Microsoft.ZuneMusic_8wekyb3d8bbwe!Microsoft.ZuneMusic",
+         r"C:\Program Files\WindowsApps\Microsoft.Media.Player.exe", True),
+        ("Spotify.exe", r"C:\Program Files\Google\Chrome\Application\chrome.exe", False),
+        ("Chrome", r"C:\Windows\System32\svchost.exe", False),
+        ("", r"C:\x\spotify.exe", False),
+        ("Spotify.exe", "", False),
+    ]
+    for app_id, exe, expected in cases:
+        check(f"audio match {app_id!r} ~ {exe.rsplit(chr(92), 1)[-1]!r}",
+              process_matches(app_id, exe) is expected)
+
+
 def test_app_icon() -> None:
     for size in (16, 32, 256):
         image = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
@@ -289,6 +309,7 @@ def main() -> int:
     test_hotkeys()
     test_app_icon()
     test_updates()
+    test_audio_matching()
     test_sources()
     test_locales()
     print()

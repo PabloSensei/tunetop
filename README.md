@@ -31,6 +31,8 @@ plugins required.
   Minimal Light are bundled
 - **13 interface languages**, following Windows by default
 - **Global hotkeys** — show/hide, play-pause, next, previous, volume
+- **Per-player volume** — the wheel and volume hotkeys turn down just the player,
+  not the whole system (switchable)
 - **Tray icon** with the current track in its tooltip and a full command menu
 - **Source picker** — follow the current Windows player, or pin one specific app
 - **Compact mode** — a slim bar with just the buttons (double-click the widget)
@@ -204,6 +206,7 @@ app/icons.py            vector icons
 app/player_widget.py    the widget itself (fully QPainter-drawn)
 app/settings_dialog.py  settings window
 app/application.py      tray, menus, wiring
+app/audio.py            per-app volume via the Core Audio mixer (ctypes COM)
 app/system.py           autostart and volume keys
 app/updates.py          GitHub release update checks
 locales/                bundled translations

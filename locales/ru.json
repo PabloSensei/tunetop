@@ -4,6 +4,7 @@
   "widget.no_player": "Нет активного плеера",
   "widget.start_music": "запустите музыку",
   "widget.no_track_data": "нет данных о треке",
+  "widget.volume": "Громкость {percent}%",
 
   "menu.show_widget": "Показать виджет",
   "menu.hide_widget": "Скрыть виджет",
@@ -52,7 +53,10 @@
   "settings.show_art": "Показывать обложку",
   "settings.show_progress": "Показывать прогресс трека (клик — перемотка)",
   "settings.scroll_titles": "Прокручивать длинные названия",
-  "settings.wheel_volume": "Колесо мыши над виджетом меняет громкость системы",
+  "settings.wheel_volume": "Колесо мыши над виджетом меняет громкость",
+  "settings.volume_target": "Колесо и горячие клавиши громкости меняют:",
+  "settings.volume_app": "громкость самого плеера",
+  "settings.volume_system": "громкость системы",
 
   "settings.group.startup": "Запуск",
   "settings.autostart": "Запускать вместе с Windows",
@@ -113,7 +117,7 @@
   "about.drag": "перетаскивание за пустое место — двигает виджет",
   "about.double_click": "двойной клик — компактный режим",
   "about.middle_click": "средняя кнопка — play/pause",
-  "about.wheel": "колесо — громкость системы",
+  "about.wheel": "колесо — громкость",
   "about.right_click": "правая кнопка — меню",
   "about.files": "Файлы:",
   "about.files_text": "настройки, скины и переводы лежат в",

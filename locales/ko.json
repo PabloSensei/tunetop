@@ -4,6 +4,7 @@
   "widget.no_player": "재생 중인 플레이어가 없습니다",
   "widget.start_music": "음악을 재생해 보세요",
   "widget.no_track_data": "트랙 정보 없음",
+  "widget.volume": "볼륨 {percent}%",
 
   "menu.show_widget": "위젯 표시",
   "menu.hide_widget": "위젯 숨기기",
@@ -52,7 +53,10 @@
   "settings.show_art": "앨범 아트 표시",
   "settings.show_progress": "재생 진행 표시 (클릭하여 이동)",
   "settings.scroll_titles": "긴 제목 흐르게 표시",
-  "settings.wheel_volume": "위젯 위에서 휠로 시스템 볼륨 조절",
+  "settings.wheel_volume": "위젯 위에서 휠로 볼륨 조절",
+  "settings.volume_target": "휠과 볼륨 단축키로 조절할 대상:",
+  "settings.volume_app": "플레이어 자체 볼륨",
+  "settings.volume_system": "시스템 볼륨",
 
   "settings.group.startup": "시작",
   "settings.autostart": "Windows 시작 시 실행",
@@ -113,7 +117,7 @@
   "about.drag": "빈 곳을 드래그 — 위젯 이동",
   "about.double_click": "더블클릭 — 간단 모드",
   "about.middle_click": "가운데 버튼 — 재생/일시정지",
-  "about.wheel": "휠 — 시스템 볼륨",
+  "about.wheel": "휠 — 볼륨",
   "about.right_click": "오른쪽 버튼 — 메뉴",
   "about.files": "파일:",
   "about.files_text": "설정, 스킨, 번역 파일 위치:",

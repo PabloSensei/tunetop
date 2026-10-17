@@ -134,6 +134,7 @@ class Settings:
     hotkeys_enabled: bool = True
     hotkeys: dict[str, str] = field(default_factory=lambda: dict(DEFAULT_HOTKEYS))
     wheel_volume: bool = True
+    volume_target: str = "app"  # "app" (the player's own volume) | "system"
 
     # media source
     source_mode: str = "auto"  # "auto" | "pinned"

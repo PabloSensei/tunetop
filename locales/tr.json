@@ -4,6 +4,7 @@
   "widget.no_player": "Etkin oynatıcı yok",
   "widget.start_music": "bir müzik başlatın",
   "widget.no_track_data": "parça bilgisi yok",
+  "widget.volume": "Ses %{percent}",
 
   "menu.show_widget": "Bileşeni göster",
   "menu.hide_widget": "Bileşeni gizle",
@@ -52,7 +53,10 @@
   "settings.show_art": "Albüm kapağını göster",
   "settings.show_progress": "Parça ilerlemesini göster (tıklayarak ileri sar)",
   "settings.scroll_titles": "Uzun başlıkları kaydır",
-  "settings.wheel_volume": "Bileşen üzerinde fare tekerleği sistem sesini değiştirir",
+  "settings.wheel_volume": "Bileşen üzerinde fare tekerleği sesi değiştirir",
+  "settings.volume_target": "Tekerlek ve ses kısayolları şunu değiştirir:",
+  "settings.volume_app": "oynatıcının kendi sesi",
+  "settings.volume_system": "sistem sesi",
 
   "settings.group.startup": "Başlangıç",
   "settings.autostart": "Windows ile birlikte başlat",
@@ -113,7 +117,7 @@
   "about.drag": "boş bir yerden sürükleyin — bileşeni taşır",
   "about.double_click": "çift tıklama — kompakt mod",
   "about.middle_click": "orta düğme — oynat/duraklat",
-  "about.wheel": "tekerlek — sistem sesi",
+  "about.wheel": "tekerlek — ses",
   "about.right_click": "sağ düğme — menü",
   "about.files": "Dosyalar:",
   "about.files_text": "ayarlar, temalar ve çeviriler şurada:",
