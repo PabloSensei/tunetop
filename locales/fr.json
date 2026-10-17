@@ -51,6 +51,7 @@
 
   "settings.group.content": "Contenu du widget",
   "settings.show_art": "Afficher la pochette",
+  "settings.art_background": "Teinter le fond avec les couleurs de la pochette",
   "settings.show_progress": "Afficher la progression (clic pour avancer)",
   "settings.scroll_titles": "Faire défiler les titres longs",
   "settings.wheel_volume": "La molette sur le widget règle le volume",

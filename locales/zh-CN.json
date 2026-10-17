@@ -51,6 +51,7 @@
 
   "settings.group.content": "小部件内容",
   "settings.show_art": "显示专辑封面",
+  "settings.art_background": "用专辑封面的颜色为背景着色",
   "settings.show_progress": "显示播放进度（点击可跳转）",
   "settings.scroll_titles": "滚动显示过长的标题",
   "settings.wheel_volume": "在小部件上滚动滚轮调节音量",

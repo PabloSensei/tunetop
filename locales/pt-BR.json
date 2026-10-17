@@ -51,6 +51,7 @@
 
   "settings.group.content": "Conteúdo do widget",
   "settings.show_art": "Mostrar a capa do álbum",
+  "settings.art_background": "Tingir o fundo com as cores da capa",
   "settings.show_progress": "Mostrar o progresso (clique para avançar)",
   "settings.scroll_titles": "Rolar títulos longos",
   "settings.wheel_volume": "A roda do mouse sobre o widget muda o volume",

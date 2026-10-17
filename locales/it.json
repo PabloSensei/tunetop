@@ -51,6 +51,7 @@
 
   "settings.group.content": "Contenuto del widget",
   "settings.show_art": "Mostra la copertina",
+  "settings.art_background": "Colora lo sfondo con i colori della copertina",
   "settings.show_progress": "Mostra l’avanzamento (clic per spostarsi)",
   "settings.scroll_titles": "Scorri i titoli lunghi",
   "settings.wheel_volume": "La rotellina sul widget regola il volume",

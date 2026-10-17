@@ -51,6 +51,7 @@
 
   "settings.group.content": "Bileşen içeriği",
   "settings.show_art": "Albüm kapağını göster",
+  "settings.art_background": "Arka planı albüm kapağının renkleriyle renklendir",
   "settings.show_progress": "Parça ilerlemesini göster (tıklayarak ileri sar)",
   "settings.scroll_titles": "Uzun başlıkları kaydır",
   "settings.wheel_volume": "Bileşen üzerinde fare tekerleği sesi değiştirir",

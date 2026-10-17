@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   widget shows the new level for a moment. Settings → General can switch back to
   the system volume; it is also used whenever the player has no audio session
   Tunetop can find.
+- "Tint the background with the album art colours": the card takes on the
+  cover's colours (kept dark or light to match the skin, and translucent on
+  Glass), with the progress bar in the cover's most vivid colour, and fades
+  smoothly into the next track's colours.
 
 ### Changed
 

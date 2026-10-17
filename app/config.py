@@ -116,6 +116,7 @@ class Settings:
     opacity: float = 1.0
     compact: bool = False
     show_album_art: bool = True
+    art_background: bool = False  # tint the card with colours taken from the album art
     show_progress: bool = True
     scroll_long_titles: bool = True
 

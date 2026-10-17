@@ -51,6 +51,7 @@
 
   "settings.group.content": "Содержимое виджета",
   "settings.show_art": "Показывать обложку",
+  "settings.art_background": "Подкрашивать фон цветами обложки",
   "settings.show_progress": "Показывать прогресс трека (клик — перемотка)",
   "settings.scroll_titles": "Прокручивать длинные названия",
   "settings.wheel_volume": "Колесо мыши над виджетом меняет громкость",
